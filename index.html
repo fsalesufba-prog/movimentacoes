@@ -1,0 +1,78 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VLT Salvador | BI de Movimentação</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <header class="hero">
+    <div>
+      <p class="kicker">Centro de Inteligência Logística</p>
+      <h1>VLT Salvador | Painel de Movimentação de Materiais</h1>
+      <p class="subtitle">Visão técnica consolidada para operação, produtividade e fluxo de transporte.</p>
+    </div>
+    <div class="hero-meta" id="metaInfo">Carregando dados...</div>
+  </header>
+
+  <section class="filters card">
+    <div>
+      <label for="fMaterial">Material</label>
+      <select id="fMaterial"></select>
+    </div>
+    <div>
+      <label for="fEquipamento">Equipamento</label>
+      <select id="fEquipamento"></select>
+    </div>
+    <div>
+      <label for="fOrigem">Origem</label>
+      <select id="fOrigem"></select>
+    </div>
+    <div>
+      <label for="fDestino">Destino</label>
+      <select id="fDestino"></select>
+    </div>
+    <button id="btnReset" type="button">Limpar Filtros</button>
+  </section>
+
+  <section class="kpi-grid">
+    <article class="kpi card"><h3>Registros</h3><strong id="kpiRegistros">-</strong></article>
+    <article class="kpi card"><h3>Viagens</h3><strong id="kpiViagens">-</strong></article>
+    <article class="kpi card"><h3>Volume (m³)</h3><strong id="kpiVolume">-</strong></article>
+    <article class="kpi card"><h3>Eficiência (m³/viagem)</h3><strong id="kpiEf">-</strong></article>
+    <article class="kpi card"><h3>Placas Ativas</h3><strong id="kpiPlacas">-</strong></article>
+    <article class="kpi card"><h3>Patrimônios</h3><strong id="kpiPatrimonio">-</strong></article>
+  </section>
+
+  <main class="dashboard">
+    <section class="card chart-panel"><h2>Série Temporal de Produção</h2><div id="chartTimeline" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Top Materiais por Volume</h2><div id="chartMateriais" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Fluxo Origem → Destino</h2><div id="chartSankey" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Top Rotas por Volume</h2><div id="chartRotas" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Performance por Equipamento</h2><div id="chartEquipamento" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Top Placas por Viagens</h2><div id="chartPlacas" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Top Patrimônios por Volume</h2><div id="chartPatrimonios" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Distribuição de Materiais</h2><div id="chartTreemap" class="chart"></div></section>
+    <section class="card chart-panel full"><h2>Matriz Material x Equipamento (Volume)</h2><div id="chartHeatmap" class="chart large"></div></section>
+  </main>
+
+  <section class="card table-panel">
+    <h2>Amostra de Registros (todos os campos)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Material</th><th>Origem</th><th>Destino</th><th>Viagens</th><th>Volume (m³)</th><th>Equipamento</th><th>Placa</th><th>Patrimônio</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyDados"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
