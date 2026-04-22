@@ -178,14 +178,21 @@ function chartSankey(data) {
   const links = [...route.entries()]
     .map(([k, v]) => {
       const [o, d] = k.split('|||');
-      return { source: o, target: d, value: v };
+      return {
+        source: `origem::${o}`,
+        target: `destino::${d}`,
+        value: v
+      };
     })
     .sort((a, b) => b.value - a.value)
     .slice(0, 50);
 
   const nodesSet = new Set();
   links.forEach(l => { nodesSet.add(l.source); nodesSet.add(l.target); });
-  const nodes = [...nodesSet].map(n => ({ name: n }));
+  const nodes = [...nodesSet].map(n => ({
+    name: n,
+    displayName: n.replace('origem::', '').replace('destino::', '')
+  }));
 
   state.charts.sankey.setOption({
     tooltip: { trigger: 'item' },
@@ -196,7 +203,11 @@ function chartSankey(data) {
       emphasis: { focus: 'adjacency' },
       lineStyle: { color: 'gradient', curveness: 0.5 },
       itemStyle: { borderWidth: 1, borderColor: 'rgba(255,255,255,.2)' },
-      label: { color: theme.txt, fontSize: 11 }
+      label: {
+        color: theme.txt,
+        fontSize: 11,
+        formatter: p => p.data.displayName || p.name
+      }
     }]
   });
 }
@@ -342,15 +353,15 @@ function fillTable(data) {
 function renderAll() {
   const data = state.filtered;
   updateKpis(data);
-  chartTimeline(data);
-  chartMateriais(data);
-  chartSankey(data);
-  chartRotas(data);
-  chartEquipamento(data);
-  chartPlacas(data);
-  chartPatrimonios(data);
-  chartTreemap(data);
-  chartHeatmap(data);
+  try { chartTimeline(data); } catch (e) { console.error('timeline', e); }
+  try { chartMateriais(data); } catch (e) { console.error('materiais', e); }
+  try { chartSankey(data); } catch (e) { console.error('sankey', e); }
+  try { chartRotas(data); } catch (e) { console.error('rotas', e); }
+  try { chartEquipamento(data); } catch (e) { console.error('equipamento', e); }
+  try { chartPlacas(data); } catch (e) { console.error('placas', e); }
+  try { chartPatrimonios(data); } catch (e) { console.error('patrimonios', e); }
+  try { chartTreemap(data); } catch (e) { console.error('treemap', e); }
+  try { chartHeatmap(data); } catch (e) { console.error('heatmap', e); }
   fillTable(data);
 }
 
