@@ -60,6 +60,7 @@ h1 {
   font-family: "Orbitron", sans-serif;
   font-size: clamp(1.45rem, 2.6vw, 2rem);
   line-height: 1.25;
+  color: #b8cde6;
 }
 
 .subtitle {
@@ -174,6 +175,7 @@ button {
 
 .chart-panel {
   padding: 12px;
+  break-inside: avoid;
 }
 
 .chart-panel h2 {
@@ -200,6 +202,41 @@ button {
   padding: 12px;
   position: relative;
   z-index: 1;
+}
+
+/* Modo de exportação em PDF */
+.pdf-mode .no-pdf {
+  display: none !important;
+}
+
+.pdf-mode .bg-grid {
+  opacity: 0.5;
+}
+
+.pdf-mode .hero {
+  margin-bottom: 12px;
+}
+
+.pdf-mode .filters,
+.pdf-mode .export-actions {
+  margin-bottom: 10px;
+}
+
+.pdf-mode .dashboard {
+  grid-template-columns: repeat(2, minmax(420px, 1fr));
+  gap: 10px;
+}
+
+.pdf-mode .chart-panel {
+  padding: 10px;
+}
+
+.pdf-mode .chart {
+  height: 260px;
+}
+
+.pdf-mode .chart.large {
+  height: 340px;
 }
 
 .table-panel h2 {

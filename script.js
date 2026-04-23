@@ -388,9 +388,12 @@ async function exportDashboardToPdf() {
   ids.btnExportPdf.disabled = true;
   ids.btnExportPdf.textContent = 'Gerando PDF...';
   try {
+    document.body.classList.add('pdf-mode');
+    Object.values(state.charts).forEach(c => c.resize());
+    await new Promise(r => setTimeout(r, 250));
     await html2pdf()
       .set({
-        margin: [8, 8, 8, 8],
+        margin: [6, 6, 6, 6],
         filename: `dashboard-vlt-salvador-${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050913' },
@@ -400,6 +403,8 @@ async function exportDashboardToPdf() {
       .from(ids.appExportScope)
       .save();
   } finally {
+    document.body.classList.remove('pdf-mode');
+    Object.values(state.charts).forEach(c => c.resize());
     ids.btnExportPdf.disabled = false;
     ids.btnExportPdf.textContent = 'Exportar Dashboard em PDF';
   }
