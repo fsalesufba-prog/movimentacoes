@@ -1,7 +1,8 @@
 {
     "meta":  {
-                 "gerado_em":  "2026-04-23T19:27:13-03:00",
+                 "gerado_em":  "2026-04-23T19:33:24-03:00",
                  "fonte":  "Moimentação Material-08-2025.xlsx",
+                 "planilha":  "Dados",
                  "total_registros":  9582,
                  "campos":  [
                                 "patrimonio",
