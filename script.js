@@ -15,6 +15,7 @@ const ids = {
   fOrigem: document.getElementById('fOrigem'),
   fDestino: document.getElementById('fDestino'),
   fPatrimonio: document.getElementById('fPatrimonio'),
+  fModalidade: document.getElementById('fModalidade'),
   fDataInicio: document.getElementById('fDataInicio'),
   fDataFim: document.getElementById('fDataFim'),
   fPlaca: document.getElementById('fPlaca'),
@@ -25,7 +26,7 @@ const ids = {
   tbodyDados: document.getElementById('tbodyDados')
 };
 
-const fields = ['patrimonio', 'equipamento', 'placa_locador', 'data', 'material', 'origem', 'destino', 'num_viagens', 'volume_m3'];
+const fields = ['patrimonio', 'equipamento', 'placa_locador', 'data', 'material', 'origem', 'destino', 'modalidade', 'num_viagens', 'volume_m3', 'valor'];
 
 const theme = {
   bg: 'transparent',
@@ -79,6 +80,7 @@ function populateFilters(data) {
   setSelectOptions(ids.fOrigem, [...new Set(data.map(d => d.origem).filter(Boolean))].sort());
   setSelectOptions(ids.fDestino, [...new Set(data.map(d => d.destino).filter(Boolean))].sort());
   setSelectOptions(ids.fPatrimonio, [...new Set(data.map(d => d.patrimonio).filter(Boolean))].sort());
+  setSelectOptions(ids.fModalidade, [...new Set(data.map(d => d.modalidade).filter(Boolean))].sort());
 }
 
 function getFilters() {
@@ -88,6 +90,7 @@ function getFilters() {
     origem: ids.fOrigem.value,
     destino: ids.fDestino.value,
     patrimonio: ids.fPatrimonio.value,
+    modalidade: ids.fModalidade.value,
     dataInicio: norm(ids.fDataInicio.value),
     dataFim: norm(ids.fDataFim.value),
     placa: norm(ids.fPlaca.value).toUpperCase()
@@ -102,6 +105,7 @@ function applyFilters() {
     (f.origem === ALL || d.origem === f.origem) &&
     (f.destino === ALL || d.destino === f.destino) &&
     (f.patrimonio === ALL || d.patrimonio === f.patrimonio) &&
+    (f.modalidade === ALL || d.modalidade === f.modalidade) &&
     (!f.dataInicio || (d.data && d.data >= f.dataInicio)) &&
     (!f.dataFim || (d.data && d.data <= f.dataFim)) &&
     (!f.placa || d.placa_locador.toUpperCase().includes(f.placa))
@@ -125,6 +129,7 @@ function updateKpis(data) {
   const totalReg = data.length;
   const totalViagens = data.reduce((a, b) => a + b.num_viagens, 0);
   const totalVolume = data.reduce((a, b) => a + b.volume_m3, 0);
+  const totalValor = data.reduce((a, b) => a + b.valor, 0);
   const eficiencia = totalViagens > 0 ? totalVolume / totalViagens : 0;
   const placas = new Set(data.map(d => d.placa_locador).filter(Boolean)).size;
   const patrimonios = new Set(data.map(d => d.patrimonio).filter(Boolean)).size;
@@ -132,6 +137,7 @@ function updateKpis(data) {
   document.getElementById('kpiRegistros').textContent = fmtInt.format(totalReg);
   document.getElementById('kpiViagens').textContent = fmtInt.format(totalViagens);
   document.getElementById('kpiVolume').textContent = fmtInt.format(totalVolume);
+  document.getElementById('kpiValorTotal').textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(totalValor);
   document.getElementById('kpiEf').textContent = fmtDec.format(eficiencia);
   document.getElementById('kpiPlacas').textContent = fmtInt.format(placas);
   document.getElementById('kpiPatrimonio').textContent = fmtInt.format(patrimonios);
@@ -312,6 +318,41 @@ function chartTreemap(data) {
   });
 }
 
+function chartFinanceiro(data) {
+  const map = new Map();
+  for (const r of data) {
+    const k = r.modalidade || 'Sem modalidade';
+    const item = map.get(k) || { valor: 0, viagens: 0, volume: 0 };
+    item.valor += r.valor;
+    item.viagens += r.num_viagens;
+    item.volume += r.volume_m3;
+    map.set(k, item);
+  }
+  const sorted = [...map.entries()].sort((a, b) => b[1].valor - a[1].valor).slice(0, 12);
+
+  state.charts.financeiro.setOption({
+    color: [theme.c3, theme.c1, theme.c2],
+    tooltip: { trigger: 'axis' },
+    legend: { textStyle: { color: theme.sub } },
+    grid: { left: 60, right: 40, top: 34, bottom: 50 },
+    xAxis: {
+      type: 'category',
+      data: sorted.map(v => v[0]),
+      axisLabel: { color: theme.sub, rotate: 0, interval: 0 },
+      axisLine: { lineStyle: { color: theme.sub } }
+    },
+    yAxis: [
+      { type: 'value', name: 'R$', nameTextStyle: { color: theme.sub }, ...baseAxis() },
+      { type: 'value', name: 'Viagens', nameTextStyle: { color: theme.sub }, ...baseAxis() }
+    ],
+    series: [
+      { name: 'Valor (R$)', type: 'bar', data: sorted.map(v => v[1].valor), barMaxWidth: 34 },
+      { name: 'Viagens', type: 'line', yAxisIndex: 1, data: sorted.map(v => v[1].viagens), smooth: true },
+      { name: 'Volume (m³)', type: 'line', yAxisIndex: 1, data: sorted.map(v => v[1].volume), smooth: true }
+    ]
+  });
+}
+
 function chartHeatmap(data) {
   const basculanteData = data.filter(d =>
     d.equipamento.toUpperCase().includes('BASCULANTE') && d.volume_m3 > 0
@@ -367,8 +408,10 @@ function exportFilteredToExcel() {
     Material: r.material || '',
     Origem: r.origem || '',
     Destino: r.destino || '',
+    Modalidade: r.modalidade || '',
     Viagens: r.num_viagens,
     'Volume (m³)': r.volume_m3,
+    'Valor (R$)': r.valor,
     Equipamento: r.equipamento || '',
     Placa: r.placa_locador || '',
     Patrimonio: r.patrimonio || ''
@@ -424,8 +467,10 @@ function fillTable(data) {
       <td>${r.material || '-'}</td>
       <td>${r.origem || '-'}</td>
       <td>${r.destino || '-'}</td>
+      <td>${r.modalidade || '-'}</td>
       <td>${fmtInt.format(r.num_viagens)}</td>
       <td>${fmtInt.format(r.volume_m3)}</td>
+      <td>${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(r.valor)}</td>
       <td>${r.equipamento || '-'}</td>
       <td>${r.placa_locador || '-'}</td>
       <td>${r.patrimonio || '-'}</td>
@@ -445,6 +490,7 @@ function renderAll() {
   try { chartPlacas(data); } catch (e) { console.error('placas', e); }
   try { chartPatrimonios(data); } catch (e) { console.error('patrimonios', e); }
   try { chartTreemap(data); } catch (e) { console.error('treemap', e); }
+  try { chartFinanceiro(data); } catch (e) { console.error('financeiro', e); }
   try { chartHeatmap(data); } catch (e) { console.error('heatmap', e); }
   fillTable(data);
 }
@@ -458,6 +504,7 @@ function initCharts() {
   state.charts.placas = echarts.init(document.getElementById('chartPlacas'));
   state.charts.patrimonios = echarts.init(document.getElementById('chartPatrimonios'));
   state.charts.treemap = echarts.init(document.getElementById('chartTreemap'));
+  state.charts.financeiro = echarts.init(document.getElementById('chartFinanceiro'));
   state.charts.heatmap = echarts.init(document.getElementById('chartHeatmap'));
 
   window.addEventListener('resize', () => Object.values(state.charts).forEach(c => c.resize()));
@@ -474,8 +521,10 @@ function normalizeData(raw) {
       material: norm(row.material),
       origem: norm(row.origem),
       destino: norm(row.destino),
+      modalidade: norm(row.modalidade),
       num_viagens: num(row.num_viagens),
-      volume_m3: num(row.volume_m3)
+      volume_m3: num(row.volume_m3),
+      valor: num(row.valor)
     }));
 }
 
@@ -490,11 +539,11 @@ async function boot() {
   setMeta(json.meta || {}, state.all);
   renderAll();
 
-  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(el => el.addEventListener('change', applyFilters));
   [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
   ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
-    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio].forEach(s => { s.value = ALL; });
+    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => { s.value = ALL; });
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';

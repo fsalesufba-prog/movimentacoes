@@ -43,6 +43,10 @@
       <select id="fPatrimonio"></select>
     </div>
     <div>
+      <label for="fModalidade">Modalidade</label>
+      <select id="fModalidade"></select>
+    </div>
+    <div>
       <label for="fDataInicio">Data Início</label>
       <input id="fDataInicio" type="date" />
     </div>
@@ -65,6 +69,7 @@
     <article class="kpi card"><h3>Registros</h3><strong id="kpiRegistros">-</strong></article>
     <article class="kpi card"><h3>Viagens</h3><strong id="kpiViagens">-</strong></article>
     <article class="kpi card"><h3>Volume (m³)</h3><strong id="kpiVolume">-</strong></article>
+    <article class="kpi card"><h3>Valor Total (R$)</h3><strong id="kpiValorTotal">-</strong></article>
     <article class="kpi card"><h3>Eficiência (m³/viagem)</h3><strong id="kpiEf">-</strong></article>
     <article class="kpi card"><h3>Placas Ativas</h3><strong id="kpiPlacas">-</strong></article>
     <article class="kpi card"><h3>Patrimônios</h3><strong id="kpiPatrimonio">-</strong></article>
@@ -79,6 +84,7 @@
     <section class="card chart-panel"><h2>Top Placas por Viagens</h2><div id="chartPlacas" class="chart"></div></section>
     <section class="card chart-panel"><h2>Top Patrimônios por Volume</h2><div id="chartPatrimonios" class="chart"></div></section>
     <section class="card chart-panel"><h2>Distribuição de Materiais</h2><div id="chartTreemap" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Análise Financeira por Modalidade</h2><div id="chartFinanceiro" class="chart"></div></section>
     <section class="card chart-panel full"><h2>Matriz Material x Equipamento (Volume)</h2><div id="chartHeatmap" class="chart large"></div></section>
   </main>
 
@@ -88,7 +94,7 @@
       <table>
         <thead>
           <tr>
-            <th>Data</th><th>Material</th><th>Origem</th><th>Destino</th><th>Viagens</th><th>Volume (m³)</th><th>Equipamento</th><th>Placa</th><th>Patrimônio</th>
+            <th>Data</th><th>Material</th><th>Origem</th><th>Destino</th><th>Modalidade</th><th>Viagens</th><th>Volume (m³)</th><th>Valor (R$)</th><th>Equipamento</th><th>Placa</th><th>Patrimônio</th>
           </tr>
         </thead>
         <tbody id="tbodyDados"></tbody>
