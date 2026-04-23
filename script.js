@@ -13,6 +13,10 @@ const ids = {
   fEquipamento: document.getElementById('fEquipamento'),
   fOrigem: document.getElementById('fOrigem'),
   fDestino: document.getElementById('fDestino'),
+  fPatrimonio: document.getElementById('fPatrimonio'),
+  fDataInicio: document.getElementById('fDataInicio'),
+  fDataFim: document.getElementById('fDataFim'),
+  fPlaca: document.getElementById('fPlaca'),
   btnReset: document.getElementById('btnReset'),
   metaInfo: document.getElementById('metaInfo'),
   tbodyDados: document.getElementById('tbodyDados')
@@ -71,6 +75,7 @@ function populateFilters(data) {
   setSelectOptions(ids.fEquipamento, [...new Set(data.map(d => d.equipamento).filter(Boolean))].sort());
   setSelectOptions(ids.fOrigem, [...new Set(data.map(d => d.origem).filter(Boolean))].sort());
   setSelectOptions(ids.fDestino, [...new Set(data.map(d => d.destino).filter(Boolean))].sort());
+  setSelectOptions(ids.fPatrimonio, [...new Set(data.map(d => d.patrimonio).filter(Boolean))].sort());
 }
 
 function getFilters() {
@@ -78,7 +83,11 @@ function getFilters() {
     material: ids.fMaterial.value,
     equipamento: ids.fEquipamento.value,
     origem: ids.fOrigem.value,
-    destino: ids.fDestino.value
+    destino: ids.fDestino.value,
+    patrimonio: ids.fPatrimonio.value,
+    dataInicio: norm(ids.fDataInicio.value),
+    dataFim: norm(ids.fDataFim.value),
+    placa: norm(ids.fPlaca.value).toUpperCase()
   };
 }
 
@@ -88,7 +97,11 @@ function applyFilters() {
     (f.material === ALL || d.material === f.material) &&
     (f.equipamento === ALL || d.equipamento === f.equipamento) &&
     (f.origem === ALL || d.origem === f.origem) &&
-    (f.destino === ALL || d.destino === f.destino)
+    (f.destino === ALL || d.destino === f.destino) &&
+    (f.patrimonio === ALL || d.patrimonio === f.patrimonio) &&
+    (!f.dataInicio || (d.data && d.data >= f.dataInicio)) &&
+    (!f.dataFim || (d.data && d.data <= f.dataFim)) &&
+    (!f.placa || d.placa_locador.toUpperCase().includes(f.placa))
   );
   renderAll();
 }
@@ -406,9 +419,14 @@ async function boot() {
   setMeta(json.meta || {}, state.all);
   renderAll();
 
-  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
+  ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
-    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino].forEach(s => { s.value = ALL; });
+    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio].forEach(s => { s.value = ALL; });
+    ids.fDataInicio.value = '';
+    ids.fDataFim.value = '';
+    ids.fPlaca.value = '';
     applyFilters();
   });
 }
