@@ -389,8 +389,12 @@ async function exportDashboardToPdf() {
   ids.btnExportPdf.textContent = 'Gerando PDF...';
   try {
     document.body.classList.add('pdf-mode');
+    await new Promise(r => requestAnimationFrame(r));
     Object.values(state.charts).forEach(c => c.resize());
-    await new Promise(r => setTimeout(r, 250));
+    await new Promise(r => requestAnimationFrame(r));
+    Object.values(state.charts).forEach(c => c.resize());
+    window.dispatchEvent(new Event('resize'));
+    await new Promise(r => setTimeout(r, 350));
     await html2pdf()
       .set({
         margin: [6, 6, 6, 6],
@@ -399,7 +403,7 @@ async function exportDashboardToPdf() {
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050913' },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
         pagebreak: {
-          mode: ['css', 'legacy'],
+          mode: ['avoid-all', 'css', 'legacy'],
           avoid: ['.chart-panel', '.chart-panel h2', '.kpi', '.hero', '.filters', '.export-actions']
         }
       })

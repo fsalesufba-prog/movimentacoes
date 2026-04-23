@@ -225,22 +225,26 @@ button {
 }
 
 .pdf-mode .dashboard {
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .pdf-mode .chart-panel {
   padding: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
 .pdf-mode .chart {
-  height: 300px;
+  height: 255px;
+  width: 100%;
 }
 
 .pdf-mode .chart.large {
-  height: 360px;
+  height: 300px;
+  width: 100%;
 }
 
 .pdf-mode .chart-panel h2 {
