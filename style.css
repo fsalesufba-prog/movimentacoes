@@ -90,10 +90,18 @@ h1 {
   z-index: 1;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(10, minmax(140px, 1fr));
+  grid-template-columns: repeat(10, minmax(120px, 1fr));
   align-items: end;
   padding: 16px;
   margin-bottom: 16px;
+}
+
+.filters #btnReset {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: stretch;
 }
 
 label {
@@ -292,7 +300,7 @@ tbody tr:hover {
 
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-  .filters { grid-template-columns: repeat(3, 1fr); }
+  .filters { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 760px) {
