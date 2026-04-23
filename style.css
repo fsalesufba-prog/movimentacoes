@@ -176,6 +176,8 @@ button {
 .chart-panel {
   padding: 12px;
   break-inside: avoid;
+  page-break-inside: avoid;
+  overflow: hidden;
 }
 
 .chart-panel h2 {
@@ -223,20 +225,27 @@ button {
 }
 
 .pdf-mode .dashboard {
-  grid-template-columns: repeat(2, minmax(420px, 1fr));
-  gap: 10px;
+  display: block;
 }
 
 .pdf-mode .chart-panel {
   padding: 10px;
+  margin-bottom: 10px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .pdf-mode .chart {
-  height: 260px;
+  height: 300px;
 }
 
 .pdf-mode .chart.large {
-  height: 340px;
+  height: 360px;
+}
+
+.pdf-mode .chart-panel h2 {
+  break-after: avoid-page;
+  page-break-after: avoid;
 }
 
 .table-panel h2 {

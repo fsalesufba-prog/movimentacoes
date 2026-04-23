@@ -398,7 +398,10 @@ async function exportDashboardToPdf() {
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050913' },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: {
+          mode: ['css', 'legacy'],
+          avoid: ['.chart-panel', '.chart-panel h2', '.kpi', '.hero', '.filters', '.export-actions']
+        }
       })
       .from(ids.appExportScope)
       .save();
