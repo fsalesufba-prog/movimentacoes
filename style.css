@@ -87,21 +87,48 @@ h1 {
 
 .filters {
   position: relative;
-  z-index: 1;
+  z-index: 20;
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(10, minmax(120px, 1fr));
-  align-items: end;
-  padding: 16px;
+  gap: 18px;
+  padding: 18px;
   margin-bottom: 16px;
+  overflow: visible;
 }
 
-.filters #btnReset {
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.filters-kicker {
+  margin: 0 0 4px;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+}
+
+.filters-header h2 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  color: #d4edff;
+}
+
+.filters-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  align-items: end;
+}
+
+.filter-field {
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-self: stretch;
+}
+
+.filter-field-wide {
+  grid-column: span 2;
 }
 
 label {
@@ -119,10 +146,7 @@ select, input, button {
   color: var(--text);
   padding: 9px 10px;
   font-family: inherit;
-}
-
-select[multiple] {
-  min-height: 92px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 button {
@@ -133,9 +157,100 @@ button {
   background: linear-gradient(90deg, rgba(0, 246, 166, 0.28), rgba(97, 214, 255, 0.28));
 }
 
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  border-color: rgba(97, 214, 255, 0.72);
+  box-shadow: 0 0 0 4px rgba(97, 214, 255, 0.12);
+}
+
+.filters #btnReset {
+  width: auto;
+  min-width: 180px;
+  padding-inline: 18px;
+  white-space: nowrap;
+  background: linear-gradient(90deg, rgba(255, 155, 61, 0.3), rgba(97, 214, 255, 0.28));
+}
+
+.multi-select {
+  position: relative;
+}
+
+.multi-select-trigger {
+  position: relative;
+  padding-right: 40px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+  min-height: 44px;
+}
+
+.multi-select-trigger::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+  transform: translateY(-65%) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.multi-select.open .multi-select-trigger::after {
+  transform: translateY(-25%) rotate(-135deg);
+}
+
+.multi-select-label {
+  display: block;
+  padding-right: 8px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.multi-select-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: none;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(97, 214, 255, 0.28);
+  background: rgba(5, 11, 22, 0.98);
+  box-shadow: 0 18px 40px rgba(1, 9, 20, 0.55);
+}
+
+.multi-select.open .multi-select-panel {
+  display: block;
+}
+
+.multi-select-panel select {
+  min-height: 180px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.multi-select-panel option {
+  padding: 9px 10px;
+  border-radius: 8px;
+}
+
+.multi-select-panel option:checked {
+  background: linear-gradient(90deg, rgba(0, 246, 166, 0.26), rgba(97, 214, 255, 0.3));
+  color: var(--text);
+}
+
 .export-actions {
   position: relative;
-  z-index: 1;
+  z-index: 5;
   display: grid;
   grid-template-columns: repeat(2, minmax(220px, 1fr));
   gap: 12px;
@@ -304,7 +419,7 @@ tbody tr:hover {
 
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-  .filters { grid-template-columns: repeat(2, 1fr); }
+  .filter-field-wide { grid-column: span 1; }
 }
 
 @media (max-width: 760px) {
@@ -313,7 +428,9 @@ tbody tr:hover {
   .hero-meta { width: 100%; }
   .dashboard { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .filters { grid-template-columns: 1fr; }
+  .filters-header { flex-direction: column; align-items: stretch; }
+  .filters-grid { grid-template-columns: 1fr; }
+  .filter-field-wide { grid-column: span 1; }
   .export-actions { grid-template-columns: 1fr; }
   .chart, .chart.large { height: 300px; }
 }

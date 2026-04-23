@@ -24,6 +24,8 @@ const ids = {
   tbodyDados: document.getElementById('tbodyDados')
 };
 
+const multiSelectControls = [];
+
 const fields = ['patrimonio', 'equipamento', 'placa_locador', 'data', 'material', 'origem', 'destino', 'modalidade', 'num_viagens', 'volume_m3', 'valor'];
 
 const theme = {
@@ -66,10 +68,57 @@ function setSelectOptions(sel, values) {
     sel.appendChild(op);
   });
   sel.selectedIndex = -1;
+  refreshMultiSelectLabel(sel);
 }
 
 function getSelectedValues(sel) {
   return [...sel.selectedOptions].map(o => o.value);
+}
+
+function getMultiSelectLabel(sel) {
+  const wrapper = sel.closest('.multi-select');
+  const placeholder = wrapper?.dataset.placeholder || 'Selecionar';
+  const selected = getSelectedValues(sel);
+  if (selected.length === 0) return placeholder;
+  return selected.join(', ');
+}
+
+function refreshMultiSelectLabel(sel) {
+  const wrapper = sel.closest('.multi-select');
+  const label = wrapper?.querySelector('.multi-select-label');
+  if (label) {
+    label.textContent = getMultiSelectLabel(sel);
+  }
+}
+
+function closeAllMultiSelects(except) {
+  multiSelectControls.forEach(wrapper => {
+    if (wrapper === except) return;
+    wrapper.classList.remove('open');
+    const trigger = wrapper.querySelector('.multi-select-trigger');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function setupMultiSelect(sel) {
+  const wrapper = sel.closest('.multi-select');
+  if (!wrapper) return;
+  const trigger = wrapper.querySelector('.multi-select-trigger');
+  if (!trigger) return;
+
+  multiSelectControls.push(wrapper);
+  refreshMultiSelectLabel(sel);
+
+  trigger.addEventListener('click', () => {
+    const willOpen = !wrapper.classList.contains('open');
+    closeAllMultiSelects(wrapper);
+    wrapper.classList.toggle('open', willOpen);
+    trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  });
+
+  sel.addEventListener('change', () => {
+    refreshMultiSelectLabel(sel);
+  });
 }
 
 function populateFilters(data) {
@@ -508,6 +557,22 @@ function initCharts() {
   window.addEventListener('resize', () => Object.values(state.charts).forEach(c => c.resize()));
 }
 
+function initMultiSelects() {
+  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(setupMultiSelect);
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.multi-select')) {
+      closeAllMultiSelects();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeAllMultiSelects();
+    }
+  });
+}
+
 function normalizeData(raw) {
   return raw
     .filter(row => fields.every(f => Object.prototype.hasOwnProperty.call(row, f)))
@@ -533,6 +598,7 @@ async function boot() {
   state.filtered = [...state.all];
 
   initCharts();
+  initMultiSelects();
   populateFilters(state.all);
   setMeta(json.meta || {}, state.all);
   renderAll();
@@ -543,10 +609,12 @@ async function boot() {
   ids.btnReset.addEventListener('click', () => {
     [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
       [...s.options].forEach(o => { o.selected = false; });
+      refreshMultiSelectLabel(s);
     });
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';
+    closeAllMultiSelects();
     applyFilters();
   });
   ids.btnExportExcel.addEventListener('click', exportFilteredToExcel);

@@ -22,43 +22,102 @@
   </header>
 
   <section class="filters card no-pdf">
-    <div>
-      <label for="fMaterial">Material</label>
-      <select id="fMaterial" multiple></select>
+    <div class="filters-header">
+      <div>
+        <p class="filters-kicker">Filtros Inteligentes</p>
+        <h2>Refine a visualização</h2>
+      </div>
+      <button id="btnReset" type="button">Limpar Filtros</button>
     </div>
-    <div>
-      <label for="fEquipamento">Equipamento</label>
-      <select id="fEquipamento" multiple></select>
+
+    <div class="filters-grid">
+      <div class="filter-field">
+        <label for="fMaterial">Material</label>
+        <div class="multi-select" data-placeholder="Todos os materiais">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todos os materiais</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fMaterial" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fEquipamento">Equipamento</label>
+        <div class="multi-select" data-placeholder="Todos os equipamentos">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todos os equipamentos</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fEquipamento" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fOrigem">Origem</label>
+        <div class="multi-select" data-placeholder="Todas as origens">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todas as origens</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fOrigem" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fDestino">Destino</label>
+        <div class="multi-select" data-placeholder="Todos os destinos">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todos os destinos</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fDestino" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fPatrimonio">Patrimônio</label>
+        <div class="multi-select" data-placeholder="Todos os patrimônios">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todos os patrimônios</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fPatrimonio" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fModalidade">Modalidade</label>
+        <div class="multi-select" data-placeholder="Todas as modalidades">
+          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-label">Todas as modalidades</span>
+          </button>
+          <div class="multi-select-panel">
+            <select id="fModalidade" multiple></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-field">
+        <label for="fDataInicio">Data Início</label>
+        <input id="fDataInicio" type="date" />
+      </div>
+
+      <div class="filter-field">
+        <label for="fDataFim">Data Fim</label>
+        <input id="fDataFim" type="date" />
+      </div>
+
+      <div class="filter-field filter-field-wide">
+        <label for="fPlaca">Pesquisar Placa</label>
+        <input id="fPlaca" type="text" placeholder="Ex.: JSR8C88" />
+      </div>
     </div>
-    <div>
-      <label for="fOrigem">Origem</label>
-      <select id="fOrigem" multiple></select>
-    </div>
-    <div>
-      <label for="fDestino">Destino</label>
-      <select id="fDestino" multiple></select>
-    </div>
-    <div>
-      <label for="fPatrimonio">Patrimônio</label>
-      <select id="fPatrimonio" multiple></select>
-    </div>
-    <div>
-      <label for="fModalidade">Modalidade</label>
-      <select id="fModalidade" multiple></select>
-    </div>
-    <div>
-      <label for="fDataInicio">Data Início</label>
-      <input id="fDataInicio" type="date" />
-    </div>
-    <div>
-      <label for="fDataFim">Data Fim</label>
-      <input id="fDataFim" type="date" />
-    </div>
-    <div>
-      <label for="fPlaca">Pesquisar Placa</label>
-      <input id="fPlaca" type="text" placeholder="Ex.: JSR8C88" />
-    </div>
-    <button id="btnReset" type="button">Limpar Filtros</button>
   </section>
   <section class="export-actions card">
     <button id="btnExportPdf" type="button">Exportar Dashboard em PDF</button>
