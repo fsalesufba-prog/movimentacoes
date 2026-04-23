@@ -120,6 +120,24 @@ button {
   background: linear-gradient(90deg, rgba(0, 246, 166, 0.28), rgba(97, 214, 255, 0.28));
 }
 
+.export-actions {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+#btnExportPdf {
+  background: linear-gradient(90deg, rgba(255, 155, 61, 0.32), rgba(97, 214, 255, 0.28));
+}
+
+#btnExportExcel {
+  background: linear-gradient(90deg, rgba(0, 246, 166, 0.35), rgba(127, 140, 255, 0.28));
+}
+
 .kpi-grid {
   position: relative;
   z-index: 1;
@@ -234,5 +252,6 @@ tbody tr:hover {
   .dashboard { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .filters { grid-template-columns: 1fr; }
+  .export-actions { grid-template-columns: 1fr; }
   .chart, .chart.large { height: 300px; }
 }

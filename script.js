@@ -9,6 +9,7 @@ const state = {
 };
 
 const ids = {
+  appExportScope: document.getElementById('appExportScope'),
   fMaterial: document.getElementById('fMaterial'),
   fEquipamento: document.getElementById('fEquipamento'),
   fOrigem: document.getElementById('fOrigem'),
@@ -18,6 +19,8 @@ const ids = {
   fDataFim: document.getElementById('fDataFim'),
   fPlaca: document.getElementById('fPlaca'),
   btnReset: document.getElementById('btnReset'),
+  btnExportPdf: document.getElementById('btnExportPdf'),
+  btnExportExcel: document.getElementById('btnExportExcel'),
   metaInfo: document.getElementById('metaInfo'),
   tbodyDados: document.getElementById('tbodyDados')
 };
@@ -310,14 +313,22 @@ function chartTreemap(data) {
 }
 
 function chartHeatmap(data) {
-  const mats = [...new Set(data.map(d => d.material || 'Sem material'))];
-  const eqs = [...new Set(data.map(d => d.equipamento || 'Sem equipamento'))];
+  const basculanteData = data.filter(d =>
+    d.equipamento.toUpperCase().includes('BASCULANTE') && d.volume_m3 > 0
+  );
+  const matsRank = topNFromMap(
+    keyBy(basculanteData, d => d.material || 'Sem material', d => d.volume_m3),
+    35
+  ).map(([m]) => m);
+  const mats = matsRank.length ? matsRank : ['Sem material'];
+  const eqs = ['Basculante'];
   const idxMat = new Map(mats.map((m, i) => [m, i]));
-  const idxEq = new Map(eqs.map((e, i) => [e, i]));
+  const idxEq = new Map([['Basculante', 0]]);
 
   const acc = new Map();
-  for (const r of data) {
-    const k = `${r.material || 'Sem material'}|||${r.equipamento || 'Sem equipamento'}`;
+  for (const r of basculanteData) {
+    if (!idxMat.has(r.material || 'Sem material')) continue;
+    const k = `${r.material || 'Sem material'}|||Basculante`;
     acc.set(k, (acc.get(k) || 0) + r.volume_m3);
   }
   const values = [...acc.entries()].map(([k, v]) => {
@@ -330,11 +341,11 @@ function chartHeatmap(data) {
       formatter: p => `${mats[p.value[1]]}<br>${eqs[p.value[0]]}<br>${fmtInt.format(p.value[2])} m³`
     },
     grid: { left: 130, right: 30, top: 20, bottom: 90 },
-    xAxis: { type: 'category', data: eqs, axisLabel: { color: theme.sub, rotate: 10 }, axisLine: { lineStyle: { color: theme.sub } } },
+    xAxis: { type: 'category', data: eqs, axisLabel: { color: theme.sub, rotate: 0 }, axisLine: { lineStyle: { color: theme.sub } } },
     yAxis: { type: 'category', data: mats, axisLabel: { color: theme.sub }, axisLine: { lineStyle: { color: theme.sub } } },
     visualMap: {
       min: 0,
-      max: Math.max(1, ...values.map(v => v[2])),
+      max: Math.max(1, ...values.map(v => v[2]), 1),
       calculable: true,
       orient: 'horizontal',
       left: 'center',
@@ -344,6 +355,54 @@ function chartHeatmap(data) {
     },
     series: [{ type: 'heatmap', data: values, progressive: 1000 }]
   });
+}
+
+function exportFilteredToExcel() {
+  if (!window.XLSX) {
+    alert('Biblioteca de exportação Excel não carregou.');
+    return;
+  }
+  const rows = state.filtered.map(r => ({
+    Data: r.data || '',
+    Material: r.material || '',
+    Origem: r.origem || '',
+    Destino: r.destino || '',
+    Viagens: r.num_viagens,
+    'Volume (m³)': r.volume_m3,
+    Equipamento: r.equipamento || '',
+    Placa: r.placa_locador || '',
+    Patrimonio: r.patrimonio || ''
+  }));
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'Amostra Filtrada');
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  XLSX.writeFile(wb, `amostra-filtrada-${stamp}.xlsx`);
+}
+
+async function exportDashboardToPdf() {
+  if (!window.html2pdf) {
+    alert('Biblioteca de exportação PDF não carregou.');
+    return;
+  }
+  ids.btnExportPdf.disabled = true;
+  ids.btnExportPdf.textContent = 'Gerando PDF...';
+  try {
+    await html2pdf()
+      .set({
+        margin: [8, 8, 8, 8],
+        filename: `dashboard-vlt-salvador-${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050913' },
+        jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      })
+      .from(ids.appExportScope)
+      .save();
+  } finally {
+    ids.btnExportPdf.disabled = false;
+    ids.btnExportPdf.textContent = 'Exportar Dashboard em PDF';
+  }
 }
 
 function fillTable(data) {
@@ -429,6 +488,8 @@ async function boot() {
     ids.fPlaca.value = '';
     applyFilters();
   });
+  ids.btnExportExcel.addEventListener('click', exportFilteredToExcel);
+  ids.btnExportPdf.addEventListener('click', exportDashboardToPdf);
 }
 
 boot().catch(err => {

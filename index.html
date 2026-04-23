@@ -6,8 +6,11 @@
   <title>VLT Salvador | BI de Movimentação</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+  <div id="appExportScope">
   <div class="bg-grid"></div>
   <header class="hero">
     <div>
@@ -53,6 +56,10 @@
     </div>
     <button id="btnReset" type="button">Limpar Filtros</button>
   </section>
+  <section class="export-actions card">
+    <button id="btnExportPdf" type="button">Exportar Dashboard em PDF</button>
+    <button id="btnExportExcel" type="button">Exportar Amostra em Excel</button>
+  </section>
 
   <section class="kpi-grid">
     <article class="kpi card"><h3>Registros</h3><strong id="kpiRegistros">-</strong></article>
@@ -90,5 +97,6 @@
   </section>
 
   <script src="script.js"></script>
+  </div>
 </body>
 </html>
