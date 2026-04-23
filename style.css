@@ -121,6 +121,10 @@ select, input, button {
   font-family: inherit;
 }
 
+select[multiple] {
+  min-height: 92px;
+}
+
 button {
   cursor: pointer;
   font-weight: 700;

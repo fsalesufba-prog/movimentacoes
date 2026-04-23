@@ -1,7 +1,5 @@
 ﻿const fmtInt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
 const fmtDec = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const ALL = 'Todos';
-
 const state = {
   all: [],
   filtered: [],
@@ -61,17 +59,17 @@ function keyBy(items, keyFn, valFn = () => 1) {
 
 function setSelectOptions(sel, values) {
   sel.innerHTML = '';
-  const allOpt = document.createElement('option');
-  allOpt.value = ALL;
-  allOpt.textContent = ALL;
-  sel.appendChild(allOpt);
   values.forEach(v => {
     const op = document.createElement('option');
     op.value = v;
     op.textContent = v;
     sel.appendChild(op);
   });
-  sel.value = ALL;
+  sel.selectedIndex = -1;
+}
+
+function getSelectedValues(sel) {
+  return [...sel.selectedOptions].map(o => o.value);
 }
 
 function populateFilters(data) {
@@ -85,12 +83,12 @@ function populateFilters(data) {
 
 function getFilters() {
   return {
-    material: ids.fMaterial.value,
-    equipamento: ids.fEquipamento.value,
-    origem: ids.fOrigem.value,
-    destino: ids.fDestino.value,
-    patrimonio: ids.fPatrimonio.value,
-    modalidade: ids.fModalidade.value,
+    material: getSelectedValues(ids.fMaterial),
+    equipamento: getSelectedValues(ids.fEquipamento),
+    origem: getSelectedValues(ids.fOrigem),
+    destino: getSelectedValues(ids.fDestino),
+    patrimonio: getSelectedValues(ids.fPatrimonio),
+    modalidade: getSelectedValues(ids.fModalidade),
     dataInicio: norm(ids.fDataInicio.value),
     dataFim: norm(ids.fDataFim.value),
     placa: norm(ids.fPlaca.value).toUpperCase()
@@ -100,12 +98,12 @@ function getFilters() {
 function applyFilters() {
   const f = getFilters();
   state.filtered = state.all.filter(d =>
-    (f.material === ALL || d.material === f.material) &&
-    (f.equipamento === ALL || d.equipamento === f.equipamento) &&
-    (f.origem === ALL || d.origem === f.origem) &&
-    (f.destino === ALL || d.destino === f.destino) &&
-    (f.patrimonio === ALL || d.patrimonio === f.patrimonio) &&
-    (f.modalidade === ALL || d.modalidade === f.modalidade) &&
+    (f.material.length === 0 || f.material.includes(d.material)) &&
+    (f.equipamento.length === 0 || f.equipamento.includes(d.equipamento)) &&
+    (f.origem.length === 0 || f.origem.includes(d.origem)) &&
+    (f.destino.length === 0 || f.destino.includes(d.destino)) &&
+    (f.patrimonio.length === 0 || f.patrimonio.includes(d.patrimonio)) &&
+    (f.modalidade.length === 0 || f.modalidade.includes(d.modalidade)) &&
     (!f.dataInicio || (d.data && d.data >= f.dataInicio)) &&
     (!f.dataFim || (d.data && d.data <= f.dataFim)) &&
     (!f.placa || d.placa_locador.toUpperCase().includes(f.placa))
@@ -543,7 +541,9 @@ async function boot() {
   [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
   ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
-    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => { s.value = ALL; });
+    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
+      [...s.options].forEach(o => { o.selected = false; });
+    });
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';
