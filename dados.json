@@ -1,9 +1,9 @@
 {
   "meta": {
-    "gerado_em": "2026-04-24T08:57:57-03:00",
+    "gerado_em": "2026-04-24T10:41:25-03:00",
     "fonte": "Moimentação Material-08-2025.xlsx",
     "planilha": "Dados",
-    "total_registros": 9595,
+    "total_registros": 9606,
     "campos": [
       "patrimonio",
       "equipamento",
@@ -98378,17 +98378,17 @@
       "valor": 250
     },
     {
-      "patrimonio": "30301063",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRL4A31",
+      "placa_locador": "JRL4A31",
       "data": "2026-03-26",
       "material": "Bota fora",
       "origem": "PI",
       "destino": "SOLUMAQ",
-      "modalidade": "Mensal",
+      "modalidade": "Produção",
       "num_viagens": 2,
       "volume_m3": 24,
-      "valor": 500
+      "valor": 760
     },
     {
       "patrimonio": "FLM",
@@ -99808,17 +99808,17 @@
       "valor": 380
     },
     {
-      "patrimonio": "30301062",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRJ5D24",
+      "placa_locador": "ERJ5D24",
       "data": "2026-03-28",
       "material": "Bota fora",
       "origem": "PI",
       "destino": "SOLUMAQ",
-      "modalidade": "Mensal",
+      "modalidade": "Produção",
       "num_viagens": 5,
       "volume_m3": 60,
-      "valor": 1250
+      "valor": 1750
     },
     {
       "patrimonio": "30301014",
@@ -99977,17 +99977,17 @@
       "valor": 500
     },
     {
-      "patrimonio": "30301062",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRJ5D24",
+      "placa_locador": "ERJ5D24",
       "data": "2026-03-30",
       "material": "Bota fora",
       "origem": "EIXO1000E-320-316",
       "destino": "SOLUMAQ",
-      "modalidade": "Mensal",
+      "modalidade": "Produção",
       "num_viagens": 2,
       "volume_m3": 24,
-      "valor": 500
+      "valor": 760
     },
     {
       "patrimonio": "30301036",
@@ -100003,17 +100003,17 @@
       "valor": 500
     },
     {
-      "patrimonio": "30301063",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRL4A31",
+      "placa_locador": "ARL4A31",
       "data": "2026-03-30",
       "material": "Bota fora",
       "origem": "EIXO1000E-320-316",
       "destino": "SOLUMAQ",
-      "modalidade": "Mensal",
+      "modalidade": "Produção",
       "num_viagens": 2,
       "volume_m3": 24,
-      "valor": 500
+      "valor": 760
     },
     {
       "patrimonio": "30301052",
@@ -102252,17 +102252,17 @@
       "valor": 1100
     },
     {
-      "patrimonio": "30301062",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRJ5D24",
+      "placa_locador": "JHJ5D24",
       "data": "2026-04-02",
       "material": "Bota fora",
       "origem": "EIXO -500",
-      "destino": "Pedreira civil",
-      "modalidade": "Mensal",
+      "destino": "SOLUMAQ",
+      "modalidade": "Produção",
       "num_viagens": 8,
       "volume_m3": 96,
-      "valor": 800
+      "valor": 3040
     },
     {
       "patrimonio": "30301036",
@@ -102304,17 +102304,17 @@
       "valor": 100
     },
     {
-      "patrimonio": "30301064",
+      "patrimonio": "FLM",
       "equipamento": "CAMINHÃO BASCULANTE",
-      "placa_locador": "QRH1A16",
+      "placa_locador": "HRH1A16",
       "data": "2026-04-02",
       "material": "Bota fora",
       "origem": "EIXO -500",
-      "destino": "Pedreira civil",
-      "modalidade": "Mensal",
+      "destino": "SOLUMAQ",
+      "modalidade": "Produção",
       "num_viagens": 5,
       "volume_m3": 60,
-      "valor": 500
+      "valor": 1750
     },
     {
       "patrimonio": "30301052",
@@ -124584,6 +124584,149 @@
       "num_viagens": 1,
       "volume_m3": 12,
       "valor": 100
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JOM0980",
+      "data": "2026-04-11",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 11,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "MSIB26",
+      "data": "2026-04-14",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 9,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "HZU6026",
+      "data": "2026-04-16",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 10,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "IAB4250",
+      "data": "2026-04-16",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 11,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JPX2C12",
+      "data": "2026-04-16",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 11,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "MSIB26",
+      "data": "2026-04-16",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 12,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JOZ1407",
+      "data": "2026-04-17",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 12,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JOZ1266",
+      "data": "2026-04-17",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 12,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JOZ0773",
+      "data": "2026-04-18",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 12,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "JOZ01407",
+      "data": "2026-04-18",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 14,
+      "volume_m3": 72,
+      "valor": 1200
+    },
+    {
+      "patrimonio": "FLM",
+      "equipamento": "CAMINHÃO BASCULANTE",
+      "placa_locador": "IAB4250",
+      "data": "2026-04-18",
+      "material": "Arenoso",
+      "origem": "AE-6(ESTOQUE)",
+      "destino": "Terraarmada",
+      "modalidade": "Diaria",
+      "num_viagens": 13,
+      "volume_m3": 72,
+      "valor": 1200
     },
     {
       "patrimonio": "FLM",
