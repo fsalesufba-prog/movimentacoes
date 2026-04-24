@@ -1,5 +1,6 @@
 import json
 import os
+import argparse
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -120,6 +121,42 @@ def read_rows(path):
     return data
 
 
+def read_rows_by_excel_range(path, start_row, end_row):
+    workbook = load_workbook(path, data_only=True, read_only=True)
+    worksheet = workbook[SOURCE_SHEET]
+
+    source_headers = [
+        normalize_text(worksheet.cell(1, col).value).upper()
+        for col in range(1, worksheet.max_column + 1)
+    ]
+    expected_headers = set(HEADER_MAP.keys())
+    if set(source_headers) != expected_headers:
+        raise ValueError(
+            f"Cabeçalhos inesperados na aba {SOURCE_SHEET}: {source_headers}"
+        )
+
+    rows = []
+    for excel_row in range(start_row, end_row + 1):
+        values = [worksheet.cell(excel_row, col).value for col in range(1, worksheet.max_column + 1)]
+        if all(cell in (None, "") for cell in values):
+            continue
+
+        source_row = dict(zip(source_headers, values))
+        record = OrderedDict()
+        for target_key in OUTPUT_FIELD_ORDER:
+            source_key = next(key for key, value in HEADER_MAP.items() if value == target_key)
+            raw_value = source_row.get(source_key)
+            if target_key == "data":
+                record[target_key] = normalize_date(raw_value)
+            elif target_key in {"num_viagens", "volume_m3", "valor"}:
+                record[target_key] = normalize_number(raw_value)
+            else:
+                record[target_key] = normalize_text(raw_value)
+        rows.append(record)
+
+    return rows
+
+
 def build_payload(source_path, rows):
     fields = OUTPUT_FIELD_ORDER
     return OrderedDict([
@@ -134,22 +171,75 @@ def build_payload(source_path, rows):
     ])
 
 
-def main():
-    source_path = find_source_file()
-    rows = read_rows(source_path)
-    payload = build_payload(source_path, rows)
+def append_rows_to_existing_json(source_path, start_row, end_row):
+    with open(OUTPUT_FILE, "r", encoding="utf-8") as fh:
+        payload = json.load(fh)
+
+    new_rows = read_rows_by_excel_range(source_path, start_row, end_row)
+    existing = payload.get("dados", [])
+
+    existing_keys = {json.dumps(row, ensure_ascii=False, sort_keys=True) for row in existing}
+    appended = []
+    for row in new_rows:
+        key = json.dumps(row, ensure_ascii=False, sort_keys=True)
+        if key in existing_keys:
+            continue
+        existing.append(row)
+        existing_keys.add(key)
+        appended.append(row)
+
+    payload["meta"]["gerado_em"] = datetime.now(TZ).isoformat(timespec="seconds")
+    payload["meta"]["fonte"] = os.path.basename(source_path)
+    payload["meta"]["planilha"] = SOURCE_SHEET
+    payload["meta"]["campos"] = OUTPUT_FIELD_ORDER
+    payload["meta"]["total_registros"] = len(existing)
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=2)
 
-    print(json.dumps({
+    return {
         "source": source_path,
         "output": OUTPUT_FILE,
         "sheet": SOURCE_SHEET,
-        "total_registros": len(rows),
-        "first_record": rows[0] if rows else None,
-        "last_record": rows[-1] if rows else None,
-    }, ensure_ascii=False, indent=2))
+        "excel_range": [start_row, end_row],
+        "rows_requested": len(new_rows),
+        "rows_appended": len(appended),
+        "total_registros": len(existing),
+        "first_appended": appended[0] if appended else None,
+        "last_appended": appended[-1] if appended else None,
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--append-start-row", type=int)
+    parser.add_argument("--append-end-row", type=int)
+    args = parser.parse_args()
+
+    source_path = find_source_file()
+    if args.append_start_row and args.append_end_row:
+        result = append_rows_to_existing_json(
+            source_path,
+            args.append_start_row,
+            args.append_end_row,
+        )
+    else:
+        rows = read_rows(source_path)
+        payload = build_payload(source_path, rows)
+
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False, indent=2)
+
+        result = {
+            "source": source_path,
+            "output": OUTPUT_FILE,
+            "sheet": SOURCE_SHEET,
+            "total_registros": len(rows),
+            "first_record": rows[0] if rows else None,
+            "last_record": rows[-1] if rows else None,
+        }
+
+    print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
