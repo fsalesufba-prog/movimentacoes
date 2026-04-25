@@ -49,6 +49,15 @@ function num(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function keyBy(items, keyFn, valFn = () => 1) {
   const map = new Map();
   for (const item of items) {
@@ -68,7 +77,7 @@ function setSelectOptions(sel, values) {
     sel.appendChild(op);
   });
   sel.selectedIndex = -1;
-  refreshMultiSelectLabel(sel);
+  refreshMultiSelect(sel);
 }
 
 function getSelectedValues(sel) {
@@ -80,7 +89,8 @@ function getMultiSelectLabel(sel) {
   const placeholder = wrapper?.dataset.placeholder || 'Selecionar';
   const selected = getSelectedValues(sel);
   if (selected.length === 0) return placeholder;
-  return selected.join(', ');
+  if (selected.length <= 2) return selected.join(', ');
+  return `${selected.length} selecionados`;
 }
 
 function refreshMultiSelectLabel(sel) {
@@ -89,6 +99,64 @@ function refreshMultiSelectLabel(sel) {
   if (label) {
     label.textContent = getMultiSelectLabel(sel);
   }
+}
+
+function renderMultiSelectChips(sel) {
+  const wrapper = sel.closest('.multi-select');
+  const chips = wrapper?.querySelector('.multi-select-chips');
+  if (!chips) return;
+
+  const selected = [...sel.options]
+    .map((option, index) => ({ option, index }))
+    .filter(item => item.option.selected);
+
+  if (selected.length === 0) {
+    chips.innerHTML = '';
+    return;
+  }
+
+  chips.innerHTML = selected.map(({ option, index }) => `
+    <span class="multi-select-chip">
+      <span class="multi-select-chip-text">${escapeHtml(option.value)}</span>
+      <button class="multi-select-chip-remove" type="button" data-index="${index}" aria-label="Remover ${escapeHtml(option.value)}">×</button>
+    </span>
+  `).join('');
+}
+
+function renderMultiSelectOptions(sel) {
+  const wrapper = sel.closest('.multi-select');
+  const optionsHost = wrapper?.querySelector('.multi-select-options');
+  const search = wrapper?.querySelector('.multi-select-search');
+  const action = wrapper?.querySelector('.multi-select-action');
+  if (!optionsHost) return;
+
+  const term = norm(search?.value).toLowerCase();
+  const options = [...sel.options]
+    .map((option, index) => ({ option, index }))
+    .filter(item => item.option.value.toLowerCase().includes(term));
+
+  if (action) {
+    const allSelected = sel.options.length > 0 && [...sel.options].every(option => option.selected);
+    action.textContent = allSelected ? 'Limpar todos' : 'Selecionar todos';
+  }
+
+  if (options.length === 0) {
+    optionsHost.innerHTML = '<div class="multi-select-empty">Nenhum item encontrado.</div>';
+    return;
+  }
+
+  optionsHost.innerHTML = options.map(({ option, index }) => `
+    <label class="multi-select-option">
+      <input type="checkbox" data-index="${index}" ${option.selected ? 'checked' : ''} />
+      <span class="multi-select-option-label">${escapeHtml(option.value)}</span>
+    </label>
+  `).join('');
+}
+
+function refreshMultiSelect(sel) {
+  refreshMultiSelectLabel(sel);
+  renderMultiSelectChips(sel);
+  renderMultiSelectOptions(sel);
 }
 
 function closeAllMultiSelects(except) {
@@ -104,21 +172,67 @@ function setupMultiSelect(sel) {
   const wrapper = sel.closest('.multi-select');
   if (!wrapper) return;
   const trigger = wrapper.querySelector('.multi-select-trigger');
+  const search = wrapper.querySelector('.multi-select-search');
+  const action = wrapper.querySelector('.multi-select-action');
+  const optionsHost = wrapper.querySelector('.multi-select-options');
+  const chips = wrapper.querySelector('.multi-select-chips');
   if (!trigger) return;
 
   multiSelectControls.push(wrapper);
-  refreshMultiSelectLabel(sel);
+  refreshMultiSelect(sel);
 
   trigger.addEventListener('click', () => {
     const willOpen = !wrapper.classList.contains('open');
     closeAllMultiSelects(wrapper);
     wrapper.classList.toggle('open', willOpen);
     trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen && search) {
+      search.focus();
+      renderMultiSelectOptions(sel);
+    }
   });
 
   sel.addEventListener('change', () => {
-    refreshMultiSelectLabel(sel);
+    refreshMultiSelect(sel);
   });
+
+  if (search) {
+    search.addEventListener('input', () => {
+      renderMultiSelectOptions(sel);
+    });
+  }
+
+  if (action) {
+    action.addEventListener('click', () => {
+      const allSelected = sel.options.length > 0 && [...sel.options].every(option => option.selected);
+      [...sel.options].forEach(option => {
+        option.selected = !allSelected;
+      });
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  if (optionsHost) {
+    optionsHost.addEventListener('change', (event) => {
+      const input = event.target.closest('input[type="checkbox"][data-index]');
+      if (!input) return;
+      const option = sel.options[Number(input.dataset.index)];
+      if (!option) return;
+      option.selected = input.checked;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  if (chips) {
+    chips.addEventListener('click', (event) => {
+      const btn = event.target.closest('.multi-select-chip-remove');
+      if (!btn) return;
+      const option = sel.options[Number(btn.dataset.index)];
+      if (!option) return;
+      option.selected = false;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
 }
 
 function populateFilters(data) {
@@ -609,7 +723,10 @@ async function boot() {
   ids.btnReset.addEventListener('click', () => {
     [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
       [...s.options].forEach(o => { o.selected = false; });
-      refreshMultiSelectLabel(s);
+      const wrapper = s.closest('.multi-select');
+      const search = wrapper?.querySelector('.multi-select-search');
+      if (search) search.value = '';
+      refreshMultiSelect(s);
     });
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';

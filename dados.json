@@ -1,6 +1,6 @@
 {
   "meta": {
-    "gerado_em": "2026-04-24T10:41:25-03:00",
+    "gerado_em": "2026-04-25T07:45:12-03:00",
     "fonte": "Moimentação Material-08-2025.xlsx",
     "planilha": "Dados",
     "total_registros": 9606,
@@ -99818,7 +99818,7 @@
       "modalidade": "Produção",
       "num_viagens": 5,
       "volume_m3": 60,
-      "valor": 1750
+      "valor": 1900
     },
     {
       "patrimonio": "30301014",
@@ -102314,7 +102314,7 @@
       "modalidade": "Produção",
       "num_viagens": 5,
       "volume_m3": 60,
-      "valor": 1750
+      "valor": 1900
     },
     {
       "patrimonio": "30301052",
