@@ -212,11 +212,12 @@ def append_rows_to_existing_json(source_path, start_row, end_row):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--source")
     parser.add_argument("--append-start-row", type=int)
     parser.add_argument("--append-end-row", type=int)
     args = parser.parse_args()
 
-    source_path = find_source_file()
+    source_path = args.source or find_source_file()
     if args.append_start_row and args.append_end_row:
         result = append_rows_to_existing_json(
             source_path,
