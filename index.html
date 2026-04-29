@@ -30,6 +30,20 @@
       <button id="btnReset" type="button">Limpar Filtros</button>
     </div>
 
+    <div class="period-filter card">
+      <label>Período de Referência</label>
+      <div class="period-picker">
+        <div class="period-group">
+          <span class="period-title">Ano</span>
+          <div id="fAnoOptions" class="period-options period-years"></div>
+        </div>
+        <div class="period-group">
+          <span class="period-title">Mês</span>
+          <div id="fMesOptions" class="period-options period-months period-months-inline"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="filters-grid">
       <div class="filter-field">
         <label for="fMaterial">Material</label>
@@ -135,20 +149,6 @@
             <div class="multi-select-chips"></div>
             <div class="multi-select-options"></div>
             <select id="fModalidade" multiple></select>
-          </div>
-        </div>
-      </div>
-
-      <div class="filter-field filter-field-wide">
-        <label>Período de Referência</label>
-        <div class="period-picker">
-          <div class="period-group">
-            <span class="period-title">Ano</span>
-            <div id="fAnoOptions" class="period-options period-years"></div>
-          </div>
-          <div class="period-group">
-            <span class="period-title">Mês</span>
-            <div id="fMesOptions" class="period-options period-months"></div>
           </div>
         </div>
       </div>

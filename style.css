@@ -95,6 +95,10 @@ h1 {
   overflow: visible;
 }
 
+.period-filter {
+  padding: 16px;
+}
+
 .filters-header {
   display: flex;
   justify-content: space-between;
@@ -158,6 +162,21 @@ h1 {
   gap: 8px;
 }
 
+.period-months-inline {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.period-months-inline::-webkit-scrollbar {
+  height: 8px;
+}
+
+.period-months-inline::-webkit-scrollbar-thumb {
+  background: rgba(97, 214, 255, 0.22);
+  border-radius: 999px;
+}
+
 .period-button {
   width: auto;
   min-width: 74px;
@@ -186,6 +205,7 @@ h1 {
 
 .period-button.period-clear {
   border-style: dashed;
+  flex-shrink: 0;
 }
 
 label {
@@ -591,4 +611,5 @@ tbody tr:hover {
   .multi-select-action { width: 100%; }
   .period-options { gap: 6px; }
   .period-button { min-width: 64px; }
+  .period-months-inline { flex-wrap: wrap; overflow-x: visible; }
 }
