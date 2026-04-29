@@ -131,17 +131,61 @@ h1 {
   grid-column: span 2;
 }
 
-#fMes {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--primary) 50%),
-    linear-gradient(135deg, var(--primary) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% - 3px);
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 34px;
+.period-picker {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(97, 214, 255, 0.14);
+  background: rgba(5, 11, 22, 0.45);
+}
+
+.period-group {
+  display: grid;
+  gap: 8px;
+}
+
+.period-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.period-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.period-button {
+  width: auto;
+  min-width: 74px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(97, 214, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.period-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(97, 214, 255, 0.34);
+}
+
+.period-button.active {
+  border-color: rgba(0, 246, 166, 0.45);
+  background: linear-gradient(90deg, rgba(0, 246, 166, 0.24), rgba(97, 214, 255, 0.24));
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 246, 166, 0.08);
+}
+
+.period-button.period-clear {
+  border-style: dashed;
 }
 
 label {
@@ -545,4 +589,6 @@ tbody tr:hover {
   .chart, .chart.large { height: 300px; }
   .multi-select-toolbar { flex-direction: column; }
   .multi-select-action { width: 100%; }
+  .period-options { gap: 6px; }
+  .period-button { min-width: 64px; }
 }

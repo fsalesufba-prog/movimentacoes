@@ -3,7 +3,11 @@ const fmtDec = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximu
 const state = {
   all: [],
   filtered: [],
-  charts: {}
+  charts: {},
+  period: {
+    year: '',
+    month: ''
+  }
 };
 
 const ids = {
@@ -14,7 +18,8 @@ const ids = {
   fDestino: document.getElementById('fDestino'),
   fPatrimonio: document.getElementById('fPatrimonio'),
   fModalidade: document.getElementById('fModalidade'),
-  fMes: document.getElementById('fMes'),
+  fAnoOptions: document.getElementById('fAnoOptions'),
+  fMesOptions: document.getElementById('fMesOptions'),
   fDataInicio: document.getElementById('fDataInicio'),
   fDataFim: document.getElementById('fDataFim'),
   fPlaca: document.getElementById('fPlaca'),
@@ -83,9 +88,8 @@ function uniqueSorted(values) {
 
 function monthLabel(monthValue) {
   if (!monthValue) return '';
-  const [year, month] = monthValue.split('-').map(Number);
-  const date = new Date(year, month - 1, 1);
-  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(date);
+  const date = new Date(2000, Number(monthValue) - 1, 1);
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(date);
 }
 
 function setSelectOptions(sel, values, selectedValues = getSelectedValues(sel)) {
@@ -100,26 +104,62 @@ function setSelectOptions(sel, values, selectedValues = getSelectedValues(sel)) 
   refreshMultiSelect(sel);
 }
 
-function setMonthOptions(data, selectedValue = ids.fMes.value) {
-  const months = uniqueSorted(data.map(item => item.data?.slice(0, 7)).filter(Boolean)).reverse();
-  ids.fMes.innerHTML = '';
+function renderPeriodButtons(container, items, selectedValue, clearLabel, type) {
+  container.innerHTML = '';
 
-  const placeholder = document.createElement('option');
-  placeholder.value = '';
-  placeholder.textContent = 'Todos os meses';
-  ids.fMes.appendChild(placeholder);
+  const clearButton = document.createElement('button');
+  clearButton.type = 'button';
+  clearButton.className = `period-button period-clear ${selectedValue === '' ? 'active' : ''}`;
+  clearButton.dataset.type = type;
+  clearButton.dataset.value = '';
+  clearButton.textContent = clearLabel;
+  container.appendChild(clearButton);
 
-  months.forEach(month => {
-    const option = document.createElement('option');
-    option.value = month;
-    option.textContent = monthLabel(month);
-    option.selected = selectedValue === month;
-    ids.fMes.appendChild(option);
+  items.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `period-button ${selectedValue === item.value ? 'active' : ''}`;
+    button.dataset.type = type;
+    button.dataset.value = item.value;
+    button.textContent = item.label;
+    container.appendChild(button);
   });
+}
 
-  if (selectedValue && !months.includes(selectedValue)) {
-    ids.fMes.value = '';
+function syncPeriodOptions(filters) {
+  const baseForYears = state.all.filter(item =>
+    matchesDateFilters(item, filters, ['ano', 'mes']) &&
+    matchesNonDateFilters(item, filters) &&
+    (!filters.placa || item.placa_locador.toUpperCase().includes(filters.placa))
+  );
+
+  const years = uniqueSorted(baseForYears.map(item => item.data?.slice(0, 4)).filter(Boolean)).reverse();
+  if (state.period.year && !years.includes(state.period.year)) {
+    state.period.year = '';
   }
+
+  const baseForMonths = state.all.filter(item =>
+    matchesDateFilters(item, filters, ['mes']) &&
+    matchesNonDateFilters(item, filters) &&
+    (!filters.placa || item.placa_locador.toUpperCase().includes(filters.placa))
+  );
+
+  const months = uniqueSorted(baseForMonths.map(item => item.data?.slice(5, 7)).filter(Boolean))
+    .map(month => ({ value: month, label: monthLabel(month) }));
+
+  const monthValues = months.map(item => item.value);
+  if (state.period.month && !monthValues.includes(state.period.month)) {
+    state.period.month = '';
+  }
+
+  renderPeriodButtons(
+    ids.fAnoOptions,
+    years.map(year => ({ value: year, label: year })),
+    state.period.year,
+    'Todos',
+    'year'
+  );
+  renderPeriodButtons(ids.fMesOptions, months, state.period.month, 'Todos', 'month');
 }
 
 function getSelectedValues(sel) {
@@ -278,7 +318,21 @@ function setupMultiSelect(sel) {
 }
 
 function populateFilters(data) {
-  setMonthOptions(data, '');
+  state.period.year = '';
+  state.period.month = '';
+  syncPeriodOptions({
+    material: [],
+    equipamento: [],
+    origem: [],
+    destino: [],
+    patrimonio: [],
+    modalidade: [],
+    ano: '',
+    mes: '',
+    dataInicio: '',
+    dataFim: '',
+    placa: ''
+  });
   syncFilterOptions({
     material: [],
     equipamento: [],
@@ -286,6 +340,7 @@ function populateFilters(data) {
     destino: [],
     patrimonio: [],
     modalidade: [],
+    ano: '',
     mes: '',
     dataInicio: '',
     dataFim: '',
@@ -301,18 +356,21 @@ function getFilters() {
     destino: getSelectedValues(ids.fDestino),
     patrimonio: getSelectedValues(ids.fPatrimonio),
     modalidade: getSelectedValues(ids.fModalidade),
-    mes: norm(ids.fMes.value),
+    ano: state.period.year,
+    mes: state.period.month,
     dataInicio: norm(ids.fDataInicio.value),
     dataFim: norm(ids.fDataFim.value),
     placa: norm(ids.fPlaca.value).toUpperCase()
   };
 }
 
-function matchesDateFilters(record, filters) {
-  const monthMatch = !filters.mes || (record.data && record.data.startsWith(filters.mes));
-  const startMatch = !filters.dataInicio || (record.data && record.data >= filters.dataInicio);
-  const endMatch = !filters.dataFim || (record.data && record.data <= filters.dataFim);
-  return monthMatch && startMatch && endMatch;
+function matchesDateFilters(record, filters, excludedKeys = []) {
+  const exclude = new Set(excludedKeys);
+  const yearMatch = exclude.has('ano') || !filters.ano || (record.data && record.data.startsWith(filters.ano));
+  const monthMatch = exclude.has('mes') || !filters.mes || (record.data && record.data.slice(5, 7) === filters.mes);
+  const startMatch = exclude.has('dataInicio') || !filters.dataInicio || (record.data && record.data >= filters.dataInicio);
+  const endMatch = exclude.has('dataFim') || !filters.dataFim || (record.data && record.data <= filters.dataFim);
+  return yearMatch && monthMatch && startMatch && endMatch;
 }
 
 function matchesNonDateFilters(record, filters, excludedKey = '') {
@@ -352,9 +410,28 @@ function syncFilterOptions(filters) {
 
 function applyFilters() {
   const filters = getFilters();
+  syncPeriodOptions(filters);
   syncFilterOptions(filters);
   state.filtered = filterData(state.all, getFilters());
   renderAll();
+}
+
+function initPeriodPicker() {
+  [ids.fAnoOptions, ids.fMesOptions].forEach(container => {
+    container.addEventListener('click', (event) => {
+      const button = event.target.closest('.period-button');
+      if (!button) return;
+
+      if (button.dataset.type === 'year') {
+        state.period.year = button.dataset.value;
+      }
+      if (button.dataset.type === 'month') {
+        state.period.month = button.dataset.value;
+      }
+
+      applyFilters();
+    });
+  });
 }
 
 function baseAxis() {
@@ -795,13 +872,14 @@ async function boot() {
   state.filtered = [...state.all];
 
   initCharts();
+  initPeriodPicker();
   initMultiSelects();
   populateFilters(state.all);
   setMeta(json.meta || {}, state.all);
   renderAll();
 
   [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(el => el.addEventListener('change', applyFilters));
-  [ids.fMes, ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
   ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
     [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
@@ -811,7 +889,8 @@ async function boot() {
       if (search) search.value = '';
       refreshMultiSelect(s);
     });
-    ids.fMes.value = '';
+    state.period.year = '';
+    state.period.month = '';
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';
