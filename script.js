@@ -14,6 +14,7 @@ const ids = {
   fDestino: document.getElementById('fDestino'),
   fPatrimonio: document.getElementById('fPatrimonio'),
   fModalidade: document.getElementById('fModalidade'),
+  fMes: document.getElementById('fMes'),
   fDataInicio: document.getElementById('fDataInicio'),
   fDataFim: document.getElementById('fDataFim'),
   fPlaca: document.getElementById('fPlaca'),
@@ -25,6 +26,14 @@ const ids = {
 };
 
 const multiSelectControls = [];
+const multiSelectMap = {
+  material: ids.fMaterial,
+  equipamento: ids.fEquipamento,
+  origem: ids.fOrigem,
+  destino: ids.fDestino,
+  patrimonio: ids.fPatrimonio,
+  modalidade: ids.fModalidade
+};
 
 const fields = ['patrimonio', 'equipamento', 'placa_locador', 'data', 'material', 'origem', 'destino', 'modalidade', 'num_viagens', 'volume_m3', 'valor'];
 
@@ -68,15 +77,15 @@ function keyBy(items, keyFn, valFn = () => 1) {
   return map;
 }
 
-function setSelectOptions(sel, values) {
+function setSelectOptions(sel, values, selectedValues = getSelectedValues(sel)) {
   sel.innerHTML = '';
   values.forEach(v => {
     const op = document.createElement('option');
     op.value = v;
     op.textContent = v;
+    op.selected = selectedValues.includes(v);
     sel.appendChild(op);
   });
-  sel.selectedIndex = -1;
   refreshMultiSelect(sel);
 }
 
@@ -236,12 +245,18 @@ function setupMultiSelect(sel) {
 }
 
 function populateFilters(data) {
-  setSelectOptions(ids.fMaterial, [...new Set(data.map(d => d.material).filter(Boolean))].sort());
-  setSelectOptions(ids.fEquipamento, [...new Set(data.map(d => d.equipamento).filter(Boolean))].sort());
-  setSelectOptions(ids.fOrigem, [...new Set(data.map(d => d.origem).filter(Boolean))].sort());
-  setSelectOptions(ids.fDestino, [...new Set(data.map(d => d.destino).filter(Boolean))].sort());
-  setSelectOptions(ids.fPatrimonio, [...new Set(data.map(d => d.patrimonio).filter(Boolean))].sort());
-  setSelectOptions(ids.fModalidade, [...new Set(data.map(d => d.modalidade).filter(Boolean))].sort());
+  syncFilterOptions({
+    material: [],
+    equipamento: [],
+    origem: [],
+    destino: [],
+    patrimonio: [],
+    modalidade: [],
+    mes: '',
+    dataInicio: '',
+    dataFim: '',
+    placa: ''
+  });
 }
 
 function getFilters() {
@@ -252,25 +267,54 @@ function getFilters() {
     destino: getSelectedValues(ids.fDestino),
     patrimonio: getSelectedValues(ids.fPatrimonio),
     modalidade: getSelectedValues(ids.fModalidade),
+    mes: norm(ids.fMes.value),
     dataInicio: norm(ids.fDataInicio.value),
     dataFim: norm(ids.fDataFim.value),
     placa: norm(ids.fPlaca.value).toUpperCase()
   };
 }
 
-function applyFilters() {
-  const f = getFilters();
-  state.filtered = state.all.filter(d =>
-    (f.material.length === 0 || f.material.includes(d.material)) &&
-    (f.equipamento.length === 0 || f.equipamento.includes(d.equipamento)) &&
-    (f.origem.length === 0 || f.origem.includes(d.origem)) &&
-    (f.destino.length === 0 || f.destino.includes(d.destino)) &&
-    (f.patrimonio.length === 0 || f.patrimonio.includes(d.patrimonio)) &&
-    (f.modalidade.length === 0 || f.modalidade.includes(d.modalidade)) &&
-    (!f.dataInicio || (d.data && d.data >= f.dataInicio)) &&
-    (!f.dataFim || (d.data && d.data <= f.dataFim)) &&
-    (!f.placa || d.placa_locador.toUpperCase().includes(f.placa))
+function matchesDateFilters(record, filters) {
+  const monthMatch = !filters.mes || (record.data && record.data.startsWith(filters.mes));
+  const startMatch = !filters.dataInicio || (record.data && record.data >= filters.dataInicio);
+  const endMatch = !filters.dataFim || (record.data && record.data <= filters.dataFim);
+  return monthMatch && startMatch && endMatch;
+}
+
+function filterData(data, filters) {
+  return data.filter(d =>
+    (filters.material.length === 0 || filters.material.includes(d.material)) &&
+    (filters.equipamento.length === 0 || filters.equipamento.includes(d.equipamento)) &&
+    (filters.origem.length === 0 || filters.origem.includes(d.origem)) &&
+    (filters.destino.length === 0 || filters.destino.includes(d.destino)) &&
+    (filters.patrimonio.length === 0 || filters.patrimonio.includes(d.patrimonio)) &&
+    (filters.modalidade.length === 0 || filters.modalidade.includes(d.modalidade)) &&
+    matchesDateFilters(d, filters) &&
+    (!filters.placa || d.placa_locador.toUpperCase().includes(filters.placa))
   );
+}
+
+function syncFilterOptions(filters) {
+  const dateScopedData = state.all.filter(item => matchesDateFilters(item, filters));
+  const optionSets = {
+    material: [...new Set(dateScopedData.map(d => d.material).filter(Boolean))].sort(),
+    equipamento: [...new Set(dateScopedData.map(d => d.equipamento).filter(Boolean))].sort(),
+    origem: [...new Set(dateScopedData.map(d => d.origem).filter(Boolean))].sort(),
+    destino: [...new Set(dateScopedData.map(d => d.destino).filter(Boolean))].sort(),
+    patrimonio: [...new Set(dateScopedData.map(d => d.patrimonio).filter(Boolean))].sort(),
+    modalidade: [...new Set(dateScopedData.map(d => d.modalidade).filter(Boolean))].sort()
+  };
+
+  Object.entries(multiSelectMap).forEach(([key, select]) => {
+    const currentSelected = getSelectedValues(select).filter(value => optionSets[key].includes(value));
+    setSelectOptions(select, optionSets[key], currentSelected);
+  });
+}
+
+function applyFilters() {
+  const filters = getFilters();
+  syncFilterOptions(filters);
+  state.filtered = filterData(state.all, getFilters());
   renderAll();
 }
 
@@ -718,7 +762,7 @@ async function boot() {
   renderAll();
 
   [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(el => el.addEventListener('change', applyFilters));
-  [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fMes, ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
   ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
     [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
@@ -728,6 +772,7 @@ async function boot() {
       if (search) search.value = '';
       refreshMultiSelect(s);
     });
+    ids.fMes.value = '';
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';
