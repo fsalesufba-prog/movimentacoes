@@ -77,6 +77,17 @@ function keyBy(items, keyFn, valFn = () => 1) {
   return map;
 }
 
+function uniqueSorted(values) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function monthLabel(monthValue) {
+  if (!monthValue) return '';
+  const [year, month] = monthValue.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(date);
+}
+
 function setSelectOptions(sel, values, selectedValues = getSelectedValues(sel)) {
   sel.innerHTML = '';
   values.forEach(v => {
@@ -87,6 +98,28 @@ function setSelectOptions(sel, values, selectedValues = getSelectedValues(sel)) 
     sel.appendChild(op);
   });
   refreshMultiSelect(sel);
+}
+
+function setMonthOptions(data, selectedValue = ids.fMes.value) {
+  const months = uniqueSorted(data.map(item => item.data?.slice(0, 7)).filter(Boolean)).reverse();
+  ids.fMes.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Todos os meses';
+  ids.fMes.appendChild(placeholder);
+
+  months.forEach(month => {
+    const option = document.createElement('option');
+    option.value = month;
+    option.textContent = monthLabel(month);
+    option.selected = selectedValue === month;
+    ids.fMes.appendChild(option);
+  });
+
+  if (selectedValue && !months.includes(selectedValue)) {
+    ids.fMes.value = '';
+  }
 }
 
 function getSelectedValues(sel) {
@@ -245,6 +278,7 @@ function setupMultiSelect(sel) {
 }
 
 function populateFilters(data) {
+  setMonthOptions(data, '');
   syncFilterOptions({
     material: [],
     equipamento: [],
@@ -281,33 +315,38 @@ function matchesDateFilters(record, filters) {
   return monthMatch && startMatch && endMatch;
 }
 
+function matchesNonDateFilters(record, filters, excludedKey = '') {
+  const checks = {
+    material: filters.material.length === 0 || filters.material.includes(record.material),
+    equipamento: filters.equipamento.length === 0 || filters.equipamento.includes(record.equipamento),
+    origem: filters.origem.length === 0 || filters.origem.includes(record.origem),
+    destino: filters.destino.length === 0 || filters.destino.includes(record.destino),
+    patrimonio: filters.patrimonio.length === 0 || filters.patrimonio.includes(record.patrimonio),
+    modalidade: filters.modalidade.length === 0 || filters.modalidade.includes(record.modalidade)
+  };
+
+  return Object.entries(checks).every(([key, value]) => key === excludedKey || value);
+}
+
 function filterData(data, filters) {
   return data.filter(d =>
-    (filters.material.length === 0 || filters.material.includes(d.material)) &&
-    (filters.equipamento.length === 0 || filters.equipamento.includes(d.equipamento)) &&
-    (filters.origem.length === 0 || filters.origem.includes(d.origem)) &&
-    (filters.destino.length === 0 || filters.destino.includes(d.destino)) &&
-    (filters.patrimonio.length === 0 || filters.patrimonio.includes(d.patrimonio)) &&
-    (filters.modalidade.length === 0 || filters.modalidade.includes(d.modalidade)) &&
+    matchesNonDateFilters(d, filters) &&
     matchesDateFilters(d, filters) &&
     (!filters.placa || d.placa_locador.toUpperCase().includes(filters.placa))
   );
 }
 
 function syncFilterOptions(filters) {
-  const dateScopedData = state.all.filter(item => matchesDateFilters(item, filters));
-  const optionSets = {
-    material: [...new Set(dateScopedData.map(d => d.material).filter(Boolean))].sort(),
-    equipamento: [...new Set(dateScopedData.map(d => d.equipamento).filter(Boolean))].sort(),
-    origem: [...new Set(dateScopedData.map(d => d.origem).filter(Boolean))].sort(),
-    destino: [...new Set(dateScopedData.map(d => d.destino).filter(Boolean))].sort(),
-    patrimonio: [...new Set(dateScopedData.map(d => d.patrimonio).filter(Boolean))].sort(),
-    modalidade: [...new Set(dateScopedData.map(d => d.modalidade).filter(Boolean))].sort()
-  };
-
   Object.entries(multiSelectMap).forEach(([key, select]) => {
-    const currentSelected = getSelectedValues(select).filter(value => optionSets[key].includes(value));
-    setSelectOptions(select, optionSets[key], currentSelected);
+    const scopedData = state.all.filter(item =>
+      matchesDateFilters(item, filters) &&
+      (!filters.placa || item.placa_locador.toUpperCase().includes(filters.placa)) &&
+      matchesNonDateFilters(item, filters, key)
+    );
+
+    const optionValues = uniqueSorted(scopedData.map(item => item[key]));
+    const currentSelected = getSelectedValues(select).filter(value => optionValues.includes(value));
+    setSelectOptions(select, optionValues, currentSelected);
   });
 }
 
