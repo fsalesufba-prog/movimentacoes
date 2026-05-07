@@ -27,15 +27,14 @@ const ids = {
   btnExportPdf: document.getElementById('btnExportPdf'),
   btnExportExcel: document.getElementById('btnExportExcel'),
   metaInfo: document.getElementById('metaInfo'),
+  pdfFilterSummary: document.getElementById('pdfFilterSummary'),
   tbodyDados: document.getElementById('tbodyDados')
 };
 
 const multiSelectControls = [];
 const multiSelectMap = {
   material: ids.fMaterial,
-  equipamento: ids.fEquipamento,
   origem: ids.fOrigem,
-  destino: ids.fDestino,
   patrimonio: ids.fPatrimonio,
   modalidade: ids.fModalidade
 };
@@ -56,6 +55,14 @@ const theme = {
 
 function norm(v) {
   return (v ?? '').toString().trim();
+}
+
+function normalizeEquipment() {
+  return 'Caminhão basculante';
+}
+
+function matchesText(value, search) {
+  return !search || norm(value).toUpperCase().includes(search.toUpperCase());
 }
 
 function num(v) {
@@ -322,9 +329,8 @@ function populateFilters(data) {
   state.period.month = '';
   syncPeriodOptions({
     material: [],
-    equipamento: [],
     origem: [],
-    destino: [],
+    destino: '',
     patrimonio: [],
     modalidade: [],
     ano: '',
@@ -335,9 +341,8 @@ function populateFilters(data) {
   });
   syncFilterOptions({
     material: [],
-    equipamento: [],
     origem: [],
-    destino: [],
+    destino: '',
     patrimonio: [],
     modalidade: [],
     ano: '',
@@ -351,9 +356,8 @@ function populateFilters(data) {
 function getFilters() {
   return {
     material: getSelectedValues(ids.fMaterial),
-    equipamento: getSelectedValues(ids.fEquipamento),
     origem: getSelectedValues(ids.fOrigem),
-    destino: getSelectedValues(ids.fDestino),
+    destino: norm(ids.fDestino.value),
     patrimonio: getSelectedValues(ids.fPatrimonio),
     modalidade: getSelectedValues(ids.fModalidade),
     ano: state.period.year,
@@ -376,9 +380,8 @@ function matchesDateFilters(record, filters, excludedKeys = []) {
 function matchesNonDateFilters(record, filters, excludedKey = '') {
   const checks = {
     material: filters.material.length === 0 || filters.material.includes(record.material),
-    equipamento: filters.equipamento.length === 0 || filters.equipamento.includes(record.equipamento),
     origem: filters.origem.length === 0 || filters.origem.includes(record.origem),
-    destino: filters.destino.length === 0 || filters.destino.includes(record.destino),
+    destino: matchesText(record.destino, filters.destino),
     patrimonio: filters.patrimonio.length === 0 || filters.patrimonio.includes(record.patrimonio),
     modalidade: filters.modalidade.length === 0 || filters.modalidade.includes(record.modalidade)
   };
@@ -399,6 +402,7 @@ function syncFilterOptions(filters) {
     const scopedData = state.all.filter(item =>
       matchesDateFilters(item, filters) &&
       (!filters.placa || item.placa_locador.toUpperCase().includes(filters.placa)) &&
+      matchesText(item.destino, filters.destino) &&
       matchesNonDateFilters(item, filters, key)
     );
 
@@ -568,17 +572,12 @@ function chartRotas(data) {
 }
 
 function chartEquipamento(data) {
-  const eqMap = new Map();
-  for (const r of data) {
-    const k = r.equipamento || 'Sem equipamento';
-    const e = eqMap.get(k) || { viagens: 0, volume: 0 };
-    e.viagens += r.num_viagens;
-    e.volume += r.volume_m3;
-    eqMap.set(k, e);
-  }
-  const names = [...eqMap.keys()];
-  const viagens = names.map(n => eqMap.get(n).viagens);
-  const volumes = names.map(n => eqMap.get(n).volume);
+  const total = data.reduce((acc, r) => {
+    acc.viagens += r.num_viagens;
+    acc.volume += r.volume_m3;
+    return acc;
+  }, { viagens: 0, volume: 0 });
+  const names = [normalizeEquipment()];
 
   state.charts.equipamento.setOption({
     color: [theme.c1, theme.c5],
@@ -588,8 +587,8 @@ function chartEquipamento(data) {
     xAxis: { type: 'category', data: names, ...baseAxis() },
     yAxis: [{ type: 'value', ...baseAxis() }, { type: 'value', ...baseAxis() }],
     series: [
-      { name: 'Viagens', type: 'bar', data: viagens, yAxisIndex: 0, barMaxWidth: 30 },
-      { name: 'Volume (m³)', type: 'line', data: volumes, yAxisIndex: 1, smooth: true }
+      { name: 'Viagens', type: 'bar', data: [total.viagens], yAxisIndex: 0, barMaxWidth: 30 },
+      { name: 'Volume (m³)', type: 'line', data: [total.volume], yAxisIndex: 1, smooth: true }
     ]
   });
 }
@@ -675,22 +674,20 @@ function chartFinanceiro(data) {
 }
 
 function chartHeatmap(data) {
-  const basculanteData = data.filter(d =>
-    d.equipamento.toUpperCase().includes('BASCULANTE') && d.volume_m3 > 0
-  );
+  const basculanteData = data.filter(d => d.volume_m3 > 0);
   const matsRank = topNFromMap(
     keyBy(basculanteData, d => d.material || 'Sem material', d => d.volume_m3),
     35
   ).map(([m]) => m);
   const mats = matsRank.length ? matsRank : ['Sem material'];
-  const eqs = ['Basculante'];
+  const eqs = [normalizeEquipment()];
   const idxMat = new Map(mats.map((m, i) => [m, i]));
-  const idxEq = new Map([['Basculante', 0]]);
+  const idxEq = new Map([[normalizeEquipment(), 0]]);
 
   const acc = new Map();
   for (const r of basculanteData) {
     if (!idxMat.has(r.material || 'Sem material')) continue;
-    const k = `${r.material || 'Sem material'}|||Basculante`;
+    const k = `${r.material || 'Sem material'}|||${normalizeEquipment()}`;
     acc.set(k, (acc.get(k) || 0) + r.volume_m3);
   }
   const values = [...acc.entries()].map(([k, v]) => {
@@ -719,6 +716,39 @@ function chartHeatmap(data) {
   });
 }
 
+function describeFilters() {
+  const filters = getFilters();
+  const describeList = values => values.length ? values.join(', ') : 'Todos';
+  return [
+    { Filtro: 'Ano', Valor: filters.ano || 'Todos' },
+    { Filtro: 'Mês', Valor: filters.mes ? monthLabel(filters.mes) : 'Todos' },
+    { Filtro: 'Data início', Valor: filters.dataInicio || 'Sem início' },
+    { Filtro: 'Data fim', Valor: filters.dataFim || 'Sem fim' },
+    { Filtro: 'Material', Valor: describeList(filters.material) },
+    { Filtro: 'Origem', Valor: describeList(filters.origem) },
+    { Filtro: 'Destino digitado', Valor: filters.destino || 'Todos' },
+    { Filtro: 'Equipamento', Valor: normalizeEquipment() },
+    { Filtro: 'Patrimônio', Valor: describeList(filters.patrimonio) },
+    { Filtro: 'Modalidade', Valor: describeList(filters.modalidade) },
+    { Filtro: 'Placa', Valor: filters.placa || 'Todas' }
+  ];
+}
+
+function renderPdfFilterSummary() {
+  const items = describeFilters();
+  ids.pdfFilterSummary.innerHTML = `
+    <h2>Filtros aplicados</h2>
+    <div class="pdf-filter-grid">
+      ${items.map(item => `
+        <div>
+          <span>${escapeHtml(item.Filtro)}</span>
+          <strong>${escapeHtml(item.Valor)}</strong>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function exportFilteredToExcel() {
   if (!window.XLSX) {
     alert('Biblioteca de exportação Excel não carregou.');
@@ -733,13 +763,23 @@ function exportFilteredToExcel() {
     Viagens: r.num_viagens,
     'Volume (m³)': r.volume_m3,
     'Valor (R$)': r.valor,
-    Equipamento: r.equipamento || '',
+    Equipamento: normalizeEquipment(),
     Placa: r.placa_locador || '',
-    Patrimonio: r.patrimonio || ''
+    Patrimônio: r.patrimonio || ''
   }));
   const wb = XLSX.utils.book_new();
+  const resumoRows = [
+    { Indicador: 'Registros filtrados', Valor: state.filtered.length },
+    { Indicador: 'Viagens', Valor: state.filtered.reduce((a, b) => a + b.num_viagens, 0) },
+    { Indicador: 'Volume (m³)', Valor: state.filtered.reduce((a, b) => a + b.volume_m3, 0) },
+    { Indicador: 'Valor total (R$)', Valor: state.filtered.reduce((a, b) => a + b.valor, 0) },
+    {},
+    ...describeFilters().map(item => ({ Indicador: item.Filtro, Valor: item.Valor }))
+  ];
+  const wsResumo = XLSX.utils.json_to_sheet(resumoRows);
   const ws = XLSX.utils.json_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, 'Amostra Filtrada');
+  XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+  XLSX.utils.book_append_sheet(wb, ws, 'Registros Filtrados');
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
   XLSX.writeFile(wb, `amostra-filtrada-${stamp}.xlsx`);
 }
@@ -792,7 +832,7 @@ function fillTable(data) {
       <td>${fmtInt.format(r.num_viagens)}</td>
       <td>${fmtInt.format(r.volume_m3)}</td>
       <td>${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(r.valor)}</td>
-      <td>${r.equipamento || '-'}</td>
+      <td>${normalizeEquipment()}</td>
       <td>${r.placa_locador || '-'}</td>
       <td>${r.patrimonio || '-'}</td>
     </tr>
@@ -813,6 +853,7 @@ function renderAll() {
   try { chartTreemap(data); } catch (e) { console.error('treemap', e); }
   try { chartFinanceiro(data); } catch (e) { console.error('financeiro', e); }
   try { chartHeatmap(data); } catch (e) { console.error('heatmap', e); }
+  renderPdfFilterSummary();
   fillTable(data);
 }
 
@@ -832,7 +873,7 @@ function initCharts() {
 }
 
 function initMultiSelects() {
-  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(setupMultiSelect);
+  [ids.fMaterial, ids.fOrigem, ids.fPatrimonio, ids.fModalidade].forEach(setupMultiSelect);
 
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.multi-select')) {
@@ -852,7 +893,7 @@ function normalizeData(raw) {
     .filter(row => fields.every(f => Object.prototype.hasOwnProperty.call(row, f)))
     .map(row => ({
       patrimonio: norm(row.patrimonio),
-      equipamento: norm(row.equipamento),
+      equipamento: normalizeEquipment(),
       placa_locador: norm(row.placa_locador),
       data: norm(row.data),
       material: norm(row.material),
@@ -878,11 +919,12 @@ async function boot() {
   setMeta(json.meta || {}, state.all);
   renderAll();
 
-  [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(el => el.addEventListener('change', applyFilters));
+  [ids.fMaterial, ids.fOrigem, ids.fPatrimonio, ids.fModalidade].forEach(el => el.addEventListener('change', applyFilters));
   [ids.fDataInicio, ids.fDataFim].forEach(el => el.addEventListener('change', applyFilters));
+  ids.fDestino.addEventListener('input', applyFilters);
   ids.fPlaca.addEventListener('input', applyFilters);
   ids.btnReset.addEventListener('click', () => {
-    [ids.fMaterial, ids.fEquipamento, ids.fOrigem, ids.fDestino, ids.fPatrimonio, ids.fModalidade].forEach(s => {
+    [ids.fMaterial, ids.fOrigem, ids.fPatrimonio, ids.fModalidade].forEach(s => {
       [...s.options].forEach(o => { o.selected = false; });
       const wrapper = s.closest('.multi-select');
       const search = wrapper?.querySelector('.multi-select-search');
@@ -891,6 +933,7 @@ async function boot() {
     });
     state.period.year = '';
     state.period.month = '';
+    ids.fDestino.value = '';
     ids.fDataInicio.value = '';
     ids.fDataFim.value = '';
     ids.fPlaca.value = '';

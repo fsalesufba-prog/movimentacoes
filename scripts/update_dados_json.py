@@ -14,6 +14,7 @@ SOURCE_FILE_HINT = "Moimentação Material-08-2025.xlsx"
 SOURCE_SHEET = "Dados"
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dados.json")
 TZ = ZoneInfo("America/Sao_Paulo")
+FIXED_EQUIPMENT = "Caminhão basculante"
 
 HEADER_MAP = {
     "PATRIMÔNIO": "patrimonio",
@@ -42,6 +43,11 @@ OUTPUT_FIELD_ORDER = [
     "volume_m3",
     "valor",
 ]
+
+
+def is_data_record(record):
+    required_fields = ("data", "material", "origem", "destino")
+    return all(record.get(field) for field in required_fields)
 
 
 def find_source_file():
@@ -114,8 +120,12 @@ def read_rows(path):
               record[target_key] = normalize_date(raw_value)
           elif target_key in {"num_viagens", "volume_m3", "valor"}:
               record[target_key] = normalize_number(raw_value)
+          elif target_key == "equipamento":
+              record[target_key] = FIXED_EQUIPMENT
           else:
               record[target_key] = normalize_text(raw_value)
+      if not is_data_record(record):
+          continue
       data.append(record)
 
     return data
@@ -150,8 +160,12 @@ def read_rows_by_excel_range(path, start_row, end_row):
                 record[target_key] = normalize_date(raw_value)
             elif target_key in {"num_viagens", "volume_m3", "valor"}:
                 record[target_key] = normalize_number(raw_value)
+            elif target_key == "equipamento":
+                record[target_key] = FIXED_EQUIPMENT
             else:
                 record[target_key] = normalize_text(raw_value)
+        if not is_data_record(record):
+            continue
         rows.append(record)
 
     return rows

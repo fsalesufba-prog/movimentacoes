@@ -242,6 +242,13 @@ button:focus {
   box-shadow: 0 0 0 4px rgba(97, 214, 255, 0.12);
 }
 
+input[readonly] {
+  border-color: rgba(0, 246, 166, 0.28);
+  background: rgba(0, 246, 166, 0.08);
+  color: #dffdf4;
+  cursor: default;
+}
+
 .filters #btnReset {
   width: auto;
   min-width: 180px;
@@ -432,6 +439,53 @@ button:focus {
   margin-bottom: 14px;
 }
 
+.pdf-filter-summary {
+  display: none;
+  position: relative;
+  z-index: 1;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.pdf-filter-summary h2 {
+  margin-bottom: 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.9rem;
+  color: #d4edff;
+}
+
+.pdf-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pdf-filter-grid div {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(97, 214, 255, 0.14);
+  background: rgba(5, 11, 22, 0.36);
+}
+
+.pdf-filter-grid span,
+.pdf-filter-grid strong {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pdf-filter-grid span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.pdf-filter-grid strong {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
 #btnExportPdf {
   background: linear-gradient(90deg, rgba(255, 155, 61, 0.32), rgba(97, 214, 255, 0.28));
 }
@@ -514,6 +568,10 @@ button:focus {
 
 .pdf-mode .bg-grid {
   opacity: 0.5;
+}
+
+.pdf-mode .pdf-filter-summary {
+  display: block;
 }
 
 .pdf-mode .hero {
@@ -606,6 +664,7 @@ tbody tr:hover {
   .filters-grid { grid-template-columns: 1fr; }
   .filter-field-wide { grid-column: span 1; }
   .export-actions { grid-template-columns: 1fr; }
+  .pdf-filter-grid { grid-template-columns: 1fr; }
   .chart, .chart.large { height: 300px; }
   .multi-select-toolbar { flex-direction: column; }
   .multi-select-action { width: 100%; }

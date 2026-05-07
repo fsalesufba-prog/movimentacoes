@@ -65,20 +65,7 @@
 
       <div class="filter-field">
         <label for="fEquipamento">Equipamento</label>
-        <div class="multi-select" data-placeholder="Todos os equipamentos">
-          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-            <span class="multi-select-label">Todos os equipamentos</span>
-          </button>
-          <div class="multi-select-panel">
-            <div class="multi-select-toolbar">
-              <input class="multi-select-search" type="text" placeholder="Buscar item" />
-              <button class="multi-select-action" type="button">Selecionar todos</button>
-            </div>
-            <div class="multi-select-chips"></div>
-            <div class="multi-select-options"></div>
-            <select id="fEquipamento" multiple></select>
-          </div>
-        </div>
+        <input id="fEquipamento" type="text" value="Caminhão basculante" readonly />
       </div>
 
       <div class="filter-field">
@@ -101,20 +88,7 @@
 
       <div class="filter-field">
         <label for="fDestino">Destino</label>
-        <div class="multi-select" data-placeholder="Todos os destinos">
-          <button class="multi-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-            <span class="multi-select-label">Todos os destinos</span>
-          </button>
-          <div class="multi-select-panel">
-            <div class="multi-select-toolbar">
-              <input class="multi-select-search" type="text" placeholder="Buscar item" />
-              <button class="multi-select-action" type="button">Selecionar todos</button>
-            </div>
-            <div class="multi-select-chips"></div>
-            <div class="multi-select-options"></div>
-            <select id="fDestino" multiple></select>
-          </div>
-        </div>
+        <input id="fDestino" type="text" placeholder="Digite o destino" />
       </div>
 
       <div class="filter-field">
@@ -171,8 +145,9 @@
   </section>
   <section class="export-actions card">
     <button id="btnExportPdf" type="button">Exportar Dashboard em PDF</button>
-    <button id="btnExportExcel" type="button">Exportar Amostra em Excel</button>
+    <button id="btnExportExcel" type="button">Exportar Registros em Excel</button>
   </section>
+  <section id="pdfFilterSummary" class="pdf-filter-summary card"></section>
 
   <section class="kpi-grid">
     <article class="kpi card"><h3>Registros</h3><strong id="kpiRegistros">-</strong></article>
@@ -189,12 +164,12 @@
     <section class="card chart-panel"><h2>Top Materiais por Volume</h2><div id="chartMateriais" class="chart"></div></section>
     <section class="card chart-panel"><h2>Fluxo Origem → Destino</h2><div id="chartSankey" class="chart"></div></section>
     <section class="card chart-panel"><h2>Top Rotas por Volume</h2><div id="chartRotas" class="chart"></div></section>
-    <section class="card chart-panel"><h2>Performance por Equipamento</h2><div id="chartEquipamento" class="chart"></div></section>
+    <section class="card chart-panel"><h2>Performance do Caminhão Basculante</h2><div id="chartEquipamento" class="chart"></div></section>
     <section class="card chart-panel"><h2>Top Placas por Viagens</h2><div id="chartPlacas" class="chart"></div></section>
     <section class="card chart-panel"><h2>Top Patrimônios por Volume</h2><div id="chartPatrimonios" class="chart"></div></section>
     <section class="card chart-panel"><h2>Distribuição de Materiais</h2><div id="chartTreemap" class="chart"></div></section>
     <section class="card chart-panel"><h2>Análise Financeira por Modalidade</h2><div id="chartFinanceiro" class="chart"></div></section>
-    <section class="card chart-panel full"><h2>Matriz Material x Equipamento (Volume)</h2><div id="chartHeatmap" class="chart large"></div></section>
+    <section class="card chart-panel full"><h2>Matriz Material x Caminhão Basculante (Volume)</h2><div id="chartHeatmap" class="chart large"></div></section>
   </main>
 
   <section class="card table-panel no-pdf">
